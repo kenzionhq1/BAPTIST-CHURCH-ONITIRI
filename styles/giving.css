@@ -1,0 +1,80 @@
+/* 🔹 Giving Section */
+.giving {
+    text-align: center;
+    padding: 50px;
+    background: #e0f7fa;
+}
+
+.giving-options {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.give-btn {
+    background: #004080;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.give-btn:hover {
+    background: #ffcc00;
+    color: black;
+}
+
+/* 🔹 Payment Form */
+.payment-form {
+    display: none;
+    margin-top: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    margin: auto;
+}
+
+.payment-form input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.payment-form button {
+    background: #004080;
+    color: white;
+    padding: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.payment-form button:hover {
+    background: #ffcc00;
+    color: black;
+}
+
+/* 🔹 Confirmation Message */
+.hidden {
+    display: none;
+}
+
+#confirmation {
+    background: #d4edda;
+    color: #155724;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    margin-top: 20px;
+    max-width: 400px;
+    margin: auto;
+}

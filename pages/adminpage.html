@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Upload | Baptist Church</title>
+  <link rel="stylesheet" href="adminpage.css" />
+</head>
+<body>
+
+  <div class="admin-container">
+    <h1>📥 Upload to Website</h1>
+
+    <form action="/uploads" method="POST" enctype="multipart/form-data">
+      <label for="title">📌 Title</label>
+      <input type="text" id="title" name="title" required />
+
+      <label for="date">📅 Date</label>
+      <input type="date" id="date" name="date" required />
+
+      <label for="category">📂 Category</label>
+      <select id="category" name="category" required>
+        <option value="">-- Select Category --</option>
+        <option value="sermon">Sermon</option>
+        <option value="event">Event</option>
+        <option value="resource">Resource</option>
+      </select>
+
+      <label for="link">🔗 Optional Link (e.g. Facebook Video URL)</label>
+      <input type="url" id="link" name="link" placeholder="https://facebook.com/..." />
+
+      <label for="file">📎 Choose File (Image or PDF)</label>
+      <input type="file" id="file" name="file" accept=".jpg,.jpeg,.png,.pdf" required />
+
+      <button type="submit">⬆ Upload</button>
+    </form>
+  </div>
+
+</body>
+</html>
