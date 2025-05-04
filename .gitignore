@@ -1,2 +1,22 @@
-.vercel
+# Ignore node_modules (Node.js projects)
+node_modules/
+
+# Ignore Python virtual environments (if ever used)
+.venv/
+env/
+__pycache__/
+*.pyc
+
+# Ignore log files
+*.log
+
+# Ignore OS system files
+.DS_Store
+Thumbs.db
+
+# Ignore environment files
 .env
+
+# Ignore build folders (if you ever use a bundler)
+dist/
+build/
