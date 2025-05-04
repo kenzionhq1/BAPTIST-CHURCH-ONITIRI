@@ -1,0 +1,104 @@
+/* 🔹 Contact Section */
+.contact-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding: 50px 20px;
+    text-align: center;
+}
+
+/* 🔹 Flip Box Styling */
+.flip-box {
+    width: 300px;
+    height: 200px;
+    perspective: 1000px;
+}
+
+.flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+/* 🔹 Front & Back Side */
+.flip-front, .flip-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    backface-visibility: hidden;
+    transition: all 0.3s ease-in-out;
+}
+
+/* 🔹 Flip Effect */
+.flip-back {
+    transform: rotateY(180deg);
+    background: #004080;
+    color: white;
+    padding: 20px;
+}
+
+/* 🔹 Flip on Hover */
+.flip-box:hover .flip-inner {
+    transform: rotateY(180deg);
+}
+
+/* 🔹 Button Styling */
+.btn {
+    display: inline-block;
+    background: #ffcc00;
+    padding: 10px 20px;
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: all 0.3s ease-in-out;
+    margin-top: 10px;
+}
+
+.btn:hover {
+    background: #002060;
+    color: white;
+}
+
+/* 🔹 Responsive Design */
+@media screen and (max-width: 768px) {
+    .contact-container {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+
+/* 🔹 Fade-in Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 🔹 Responsive Design */
+@media screen and (max-width: 768px) {
+    .pastor-contact {
+        width: 90%;
+    }
+}
+
+
+
+
+

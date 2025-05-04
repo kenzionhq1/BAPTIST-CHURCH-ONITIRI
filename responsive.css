@@ -1,0 +1,33 @@
+/* 🔹 General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  background: #f9f9f9;
+  color: #333;
+  overflow-x: hidden;
+}
+
+
+.resource-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.resource-card .btn-outline {
+  background: transparent;
+  border: 2px solid #004080;
+  color: #004080;
+}
+
+.resource-card .btn-outline:hover {
+  background: #004080;
+  color: #fff;
+}
