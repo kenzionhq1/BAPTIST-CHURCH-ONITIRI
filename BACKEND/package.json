@@ -1,0 +1,18 @@
+{
+  "name": "newsletter-backend",
+  "version": "1.0.0",
+  "description": "Backend for newsletter subscription",
+  "main": "SERVER.JS",
+  "scripts": {
+    "start": "node SERVER.JS"
+  },
+  "keywords": [],
+  "author": "Kenzion",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "nodemailer": "^6.9.3"
+  }
+}
