@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("newsletterForm");
-  const emailInput = document.getElementById("emailInput");
+  const   emailInput = document.getElementById("emailInput");
   const message = document.getElementById("subscriptionMessage");
 
   form.addEventListener("submit", async (e) => {
@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     try {
-      const response = await fetch("/subscribe", {
+      const response = await fetch("http://localhost:5000/subscribe", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
