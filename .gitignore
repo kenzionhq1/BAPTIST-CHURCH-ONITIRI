@@ -20,3 +20,6 @@ Thumbs.db
 # Ignore build folders (if you ever use a bundler)
 dist/
 build/
+
+# Ignore node_modules
+node_modules/
