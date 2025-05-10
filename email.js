@@ -1,40 +1,63 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("newsletterForm");
-  const   emailInput = document.getElementById("emailInput");
-  const message = document.getElementById("subscriptionMessage");
+document.addEventListener('DOMContentLoaded', () => {
+  const newsletterForm = document.getElementById('newsletterForm');
+  const emailInput = document.getElementById('emailInput');
+  const subscriptionMessage = document.getElementById('subscriptionMessage');
+  const subscribeButton = newsletterForm.querySelector('.subscribe-btn');
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  if (!newsletterForm || !emailInput || !subscriptionMessage || !subscribeButton) {
+    console.error('❌ Required form elements not found.');
+    return;
+  }
+
+  newsletterForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
     const email = emailInput.value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!email) {
-      message.textContent = "Please enter a valid email.";
-      message.style.color = "red";
+      subscriptionMessage.textContent = '❌ Please enter your email.';
+      subscriptionMessage.style.color = 'red';
+      return;
+    } else if (!emailRegex.test(email)) {
+      subscriptionMessage.textContent = '❌ Invalid email format.';
+      subscriptionMessage.style.color = 'red';
       return;
     }
 
+    // UI Feedback: Submitting
+    subscriptionMessage.innerHTML = '⏳ Submitting...';
+    subscriptionMessage.style.color = '#444';
+    subscribeButton.disabled = true;
+    subscribeButton.textContent = 'Submitting...';
+
     try {
-      const response = await fetch("http://localhost:5000/subscribe", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email })
+      const response = await fetch('https://church-backend-project.onrender.com/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
       });
 
-      const result = await response.json();
+      const data = await response.json();
+
       if (response.ok) {
-        message.textContent = result.message;
-        message.style.color = "green";
-        emailInput.value = "";
+        subscriptionMessage.textContent = data.message;
+        subscriptionMessage.style.color = 'green';
+        emailInput.style.display = 'none';
+        subscribeButton.textContent = 'Subscribed';
+        subscribeButton.disabled = true;
       } else {
-        message.textContent = result.message || "Subscription failed.";
-        message.style.color = "red";
+        subscriptionMessage.textContent = data.message || '❌ Subscription failed.';
+        subscriptionMessage.style.color = 'red';
+        subscribeButton.disabled = false;
+        subscribeButton.textContent = 'Subscribe';
       }
     } catch (error) {
-      console.error("Fetch error:", error);
-      message.textContent = "An error occurred. Please try again.";
-      message.style.color = "red";
+      console.error('❌ Network error:', error);
+      subscriptionMessage.textContent = '❌ Network error. Please try again.';
+      subscriptionMessage.style.color = 'red';
+      subscribeButton.disabled = false;
+      subscribeButton.textContent = 'Subscribe';
     }
   });
 });

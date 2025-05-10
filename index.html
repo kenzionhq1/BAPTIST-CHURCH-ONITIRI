@@ -15,8 +15,23 @@
   
 
   <script defer src="toggleMenu.js"></script>
+  <script defer src="event.js"></script>
+  <script defer src="load.js"></script>
 </head>
+
+
 <body>
+
+  
+  
+  <div id="loader-overlay" >
+    <div class="loader-content">
+      <img src="Unknown-removebg-preview.png" alt="Logo" class="logo-animation">
+      <p class="welcome-text"><span id="typed-text"></span><span class="cursor">|</span></p>
+
+    </div>
+  </div>
+  
 
    <!-- 🔹 Header & Navigation -->
 <header class="site-header">
@@ -24,6 +39,8 @@
     <img src="Unknown-removebg-preview.png" alt="Church logo" class="church-logo" onclick="location.href='index.html'">
     <div class="logo">Baptist Church Onitiri</div>
   </div>
+
+  
   
     <div id="menuToggle" class="menu-toggle">&#9776;</div>
   
@@ -43,9 +60,44 @@
   <section class="hero">
     <img src="HERO.jpg" alt="Hero Banner" class="banner-image">
     <div class="hero-content">
-      <h1>Welcome to <span>Baptist Church Onitiri</span></h1>
+      <h1>Welcome to <span id="typeEffect">Baptist Church Onitiri</span></h1>
       <p>Join us in worship and fellowship</p>
       <a href="about.html" class="btn">Learn More</a>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+      const textElement = document.getElementById("typeEffect");
+      const cursorElement = document.querySelector(".cursor");
+      const textArray = ["A Place of Worship", "Baptist Church Onitiri", "A Community of Faith", "A Family of Believers"];
+      let textIndex = 0;
+
+      function typeEffect() {
+        textElement.textContent = "";
+        const currentText = textArray[textIndex];
+        let charIndex = 0;
+
+        const typingInterval = setInterval(() => {
+        if (charIndex < currentText.length) {
+          textElement.textContent += currentText[charIndex];
+          charIndex++;
+        } else {
+          clearInterval(typingInterval);
+          setTimeout(() => {
+          textIndex = (textIndex + 1) % textArray.length;
+          typeEffect();
+          }, 2000); // Wait 10 seconds before starting the next text
+        }
+        }, 100); // Typing speed
+      }
+
+      
+
+      typeEffect();
+     
+      });
+    </script>
+    
     </div>
   </section>
 
@@ -55,12 +107,18 @@
     <div class="service-cards">
       <div class="card">
         <h3>Sunday Service</h3>
-        <p>🕙 10:00 AM - 12:30 PM</p>
+        <p>🕙 9:00 AM </p>
         <p>📍 Church Auditorium</p>
       </div>
       <div class="card">
-        <h3>Midweek Prayer</h3>
-        <p>🕕 6:00 PM - 7:30 PM</p>
+        <h3>Monday Bible Study</h3>
+        <p>🕕 6:30 PM - 8:00 PM</p>
+        <p>📍 Prayer Hall</p>
+      </div>
+
+      <div class="card">
+        <h3>Mid Week Prayer Service</h3>
+        <p>🕕 7:00 PM - 8:00 PM</p>
         <p>📍 Prayer Hall</p>
       </div>
     </div>
@@ -90,13 +148,14 @@
 
   <!-- 🔹 Upcoming Event -->
   <section class="upcoming-events">
-    <h2>📅 Upcoming Events</h2>
-    <div class="event-card">
-      <h3>🎉 Community Outreach</h3>
-      <p><strong>Date:</strong> March 10, 2025</p>
-      <p><strong>Time:</strong> 2:00 PM - 5:00 PM</p>
-      <p>Join us as we give back to the community with love.</p>
+    <h2> Upcoming Events</h2>
+    <div class="event-card"  data-date="May 11, 2025 08:00:00">
+      <h3>🎉 Mother's Day Service</h3>
+      <p><strong>Date:</strong> May 11th, 2025</p>
+      <p><strong>Time:</strong> 8:00 AM</p>
+      <p class="countdown"></p>
       <a href="events.html" class="btn">See All Events</a>
+    
     </div>
   </section>
 
@@ -137,7 +196,7 @@
     
  <div class="footer-socials">
       <a href="https://facebook.com/bconitiri" target="_blank"><i class="fab fa-facebook-f"></i></a>
-      <a href="https://youtube.com/@bconitiri" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://youtube.com/@BaptistChurchOnitiri" target="_blank"><i class="fab fa-youtube"></i></a>
       <a href="https://instagram.com/bconitiri" target="_blank"><i class="fab fa-instagram"></i></a>
       <a href="https://wa.me/2348034763402" target="_blank"><i class="fab fa-whatsapp"></i></a>
       <a href="mailto:info@bconitiri.org"><i class="fas fa-envelope"></i></a>

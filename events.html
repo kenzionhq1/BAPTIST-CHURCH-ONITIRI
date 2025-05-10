@@ -58,37 +58,41 @@
 
     <!-- 🔹 Upcoming Events Section -->
     <section class="upcoming-events">
-        <h2>Upcoming Events</h2>
-        <div class="event-grid">
-            <div class="event-card" onclick="openEventModal('event1')">
-                <h3>Sunday Service</h3>
-                <p><strong>Date:</strong> March 15, 2024</p>
-                <p><strong>Time:</strong> 9:00 AM</p>
-                <p class="countdown" id="countdown1"></p>
-            </div>
-            <div class="event-card" onclick="openEventModal('event2')">
-                <h3>Prayer Night</h3>
-                <p><strong>Date:</strong> March 13, 2024</p>
-                <p><strong>Time:</strong> 7:00 PM</p>
-                <p class="countdown" id="countdown2"></p>
-            </div>
-            <div class="event-card" onclick="openEventModal('event3')">
-                <h3>Easter Celebration</h3>
-                <p><strong>Date:</strong> April 1, 2024</p>
-                <p><strong>Time:</strong> 10:00 AM</p>
-                <p class="countdown" id="countdown3"></p>
-            </div>
+      <h2>Upcoming Events</h2>
+      <div class="event-grid">
+        <div class="event-card" data-date="May 11, 2025 08:00:00">
+          <img src="WhatsApp Image 2025-05-06 at 11.19.38.jpeg" alt="Mother's Day">
+          <h3>Mother's Day Service</h3>
+          <p><strong>Date:</strong> May 11th, 2025</p>
+          <p><strong>Time:</strong> 8:00 AM</p>
+          <p class="countdown"></p>
         </div>
+    
+        <div class="event-card" data-date="May 19, 2025 08:00:00">
+          <img src="youth.jpg" alt="Family month">
+          <h3>Happiest Family Day</h3>
+          <p><strong>Date:</strong> may 19th, 2025</p>
+          <p><strong>Time:</strong> 8:00 AM</p>
+          <p class="countdown"></p>
+        </div>
+      </div>
     </section>
+    
 
-    <!-- 🔹 Event Details Modal (Hidden by Default) -->
+    
+  <!-- 🔹 Event Details Modal (Hidden by Default) -->
+      <section class="upcoming-events">
+        
+  <h2>PAST EVENT</h2>
+   
     <div id="eventModal" class="modal">
         <div class="modal-content">
-            <span class="close-btn" onclick="closeEventModal()">&times;</span>
+          
             <h2 id="eventTitle"></h2>
             <p id="eventDescription"></p>
         </div>
     </div>
+      </section>
     
 
     <div class="event-gallery"><!-- Events auto-load here --></div>
@@ -96,17 +100,24 @@
 <!-- 🔹 Event 1 -->
 <div class="event-item">
     <div class="image-container">
-      <img src="bb.jpg" alt="Sunday Worship" class="main-image">
-      <div class="event-name">Sunday Worship</div>
+      <img src="Red Maximalist Easter Sunday Service  Instagram Portrait - Made with PosterMyWall (4).jpg" alt="Sunday Worship" class="main-image">
+      <div class="event-name">Easther Sunday </div>
     </div>
     <button class="view-more-btn" data-gallery="gallery1" onclick="toggleGallery('gallery1')">
       View More Photos <span>&#x25B6;</span> <!-- ▶ -->
     </button>
     <div class="hidden-gallery" id="gallery1">
       <div class="grid-gallery">
-        <img src="ba.jpg" alt="Event 1 Photo 1">
-        <img src="bb.jpg" alt="Event 1 Photo 2">
-        <img src="adi.jpg" alt="Event 1 Photo 3">
+        <img src="https://scontent.flos5-1.fna.fbcdn.net/v/t39.30808-6/492115646_1093449222819940_7340969387251467461_n.jpg?stp=c839.0.1373.1373a_dst-jpg_s552x414_tt6&_nc_cat=110&ccb=1-7&_nc_sid=92e838&_nc_eui2=AeGYD2-hlZI1dZDj8SXwRsbTVEne_4Yug7lUSd7_hi6DudhShLu4CNZsTQKKIdxsVpi2Lxdl_7dBTMHF5TaG3Zg0&_nc_ohc=Zx1KyZKfGtgQ7kNvwGGT78F&_nc_oc=Adn0noR9ES9pf9N9kpPe1Yq1OhiqDr6MRqAl9yGKRzo0E3hP7O7BfZeElwll0nR0T0A&_nc_zt=23&_nc_ht=scontent.flos5-1.fna&_nc_gid=SZr8089cDJtb2hajurjVJA&oh=00_AfLGYmT7itOHuBZT-bKVDSq0IvMTEDNfCMsYAgmrfgeHtw&oe=682193B0" alt="Event 1 Photo 1" class="grid-gallery" onclick="_blank">
+        <img src="https://scontent.flos5-3.fna.fbcdn.net/v/t39.30808-6/491947879_1093448309486698_7683008126038232619_n.jpg?stp=c839.0.1373.1373a_dst-jpg_s552x414_tt6&_nc_cat=107&ccb=1-7&_nc_sid=92e838&_nc_eui2=AeH-yRz_jhz8JZBgREQsAHxlIfqZeWk_ssYh-pl5aT-yxhEQ9fOq9yDnkWa5bfkJAaxdxhseOeMNFCy1_bLzOiRe&_nc_ohc=TeV4y30UsswQ7kNvwHl9nHk&_nc_oc=AdkX1rIkCw0n843fc0HIUtLX-ZmhAu_GM4UFEdzChxfv5CdgidX7iyX8cxQW9gHosX0&_nc_zt=23&_nc_ht=scontent.flos5-3.fna&_nc_gid=-gutzrmyHC_tu9zGxMPaTA&oh=00_AfKv8fk94yIpBC2dkVnOav32FRVyIqZf52hwxaunKY8SnA&oe=6821B39C" alt="Event 1 Photo 2">
+        <img src="https://scontent.flos5-1.fna.fbcdn.net/v/t39.30808-6/491749500_1093446446153551_5003719494001482208_n.jpg?stp=c0.554.1373.1373a_dst-jpg_s552x414_tt6&_nc_cat=103&ccb=1-7&_nc_sid=92e838&_nc_eui2=AeHTGfttXTLBrez6u5uv8tHJpN3V7LVI9eWk3dXstUj15R5Y0S6XU4GJBSqkwQlnERpd2yN-bWjrDWFtugh5-tP1&_nc_ohc=85OvpNVhaIMQ7kNvwFYLSNb&_nc_oc=AdkOoN1g-P96uMSaXlQq1rdJ-i9s6CxqE3rP7u3QS41rXgFBDcD8XBjg9mMnXot0M7I&_nc_zt=23&_nc_ht=scontent.flos5-1.fna&_nc_gid=CtYhSDhbzxt4R_z0uulDtw&oh=00_AfJfQTPNMyISd-2duOE2vVR1PYODozosxZR7fiXSvTYQVg&oe=68219BF5" alt="Event 1 Photo 3">
+        <img src="https://scontent.flos5-2.fna.fbcdn.net/v/t39.30808-6/491934167_1093446332820229_6704758006991320371_n.jpg?stp=c839.0.1373.1373a_dst-jpg_s552x414_tt6&_nc_cat=106&ccb=1-7&_nc_sid=92e838&_nc_eui2=AeG0zx_vj7vN_PLSWAZOC3NZeaIl4xdu54x5oiXjF27njGRWhynnlQTdhQ5mJnLLOCwtTJOpa8B-34KdOnU5VHFT&_nc_ohc=x8SBRadQ820Q7kNvwEeqUaV&_nc_oc=Admqq1b4IJVwc9TNRU9pEY2-PtUCTs__ppL1G3pNa_vtDtUzHJ3vua7rqoe2SFaocxg&_nc_zt=23&_nc_ht=scontent.flos5-2.fna&_nc_gid=7Ri_ZlTnLhNPdM8mbeA_Uw&oh=00_AfK1gey2wNwhkf7sEwoefLLX9myOve1R32vddIuYUR4g2g&oe=6821B109" alt="Event 1 Photo 4">
+        <img src="https://scontent.flos5-3.fna.fbcdn.net/v/t39.30808-6/491932271_1093448706153325_4729505539911856565_n.jpg?stp=c839.0.1373.1373a_dst-jpg_s552x414_tt6&_nc_cat=107&ccb=1-7&_nc_sid=92e838&_nc_eui2=AeECFjUmHnDGAqtcLBN78lH788Xv3gs6Stfzxe_eCzpK1514hocSL3wtwJ2787k4y5udVTTYUcjUmwtx1uIujH-6&_nc_ohc=HZnj8bHbKvsQ7kNvwHQpqgR&_nc_oc=AdniyQ19xJMMEov67-Z4O1d-cfAUb0Bo0LcsHzr7huEtDpiA326HA_8-uSY7GnQLEZM&_nc_zt=23&_nc_ht=scontent.flos5-3.fna&_nc_gid=STd6t1rNuw5eM6aNNglSvA&oh=00_AfIAeoV_rY9xQgXLvonRRiSBujIfGfSjQiR7osgcMVDhAQ&oe=6821A1B6" alt="Event 1 Photo 5">
+        <img src="https://scontent.flos5-3.fna.fbcdn.net/v/t39.30808-6/492153462_1093449422819920_4564891065814890839_n.jpg?stp=c420.0.1080.1080a_dst-jpg_s552x414_tt6&_nc_cat=109&ccb=1-7&_nc_sid=92e838&_nc_eui2=AeGm2eyvJI836Nk86jAw5wO62zZF1tBbbDjbNkXW0FtsOOKdo1DnZPB7672lHMM4q2VZYMlMGBww56QvlTkyMe1r&_nc_ohc=D0urrvztnNQQ7kNvwH0A5_6&_nc_oc=Adnd--n2EobaFGEoxFr_5GPlWxw3j9sD72BhvpkhbHVGzbekE2j3PhBH3a_g6gxIBRM&_nc_zt=23&_nc_ht=scontent.flos5-3.fna&_nc_gid=2T2WhmrXjxiX-JiawLwrXg&oh=00_AfJMBZWagAE8AECL8R0y4vOGfQp3V0Mxp6rAam1qvF261Q&oe=6821A6FB" alt="Event 1 Photo 6">
+        <img src="https://scontent.flos5-1.fna.fbcdn.net/v/t39.30808-6/491933439_1093448862819976_3555915043484853619_n.jpg?stp=c839.0.1373.1373a_dst-jpg_s552x414_tt6&_nc_cat=110&ccb=1-7&_nc_sid=92e838&_nc_eui2=AeG4nGxCyB-GLoRlA40JKxHc_zbfjyEm2b7_Nt-PISbZvs67azSyUZhlnPkL2wgUBqQ-pixYFuT6HVGxeLh6Q7ft&_nc_ohc=S4gG7s_OSc0Q7kNvwGk23fj&_nc_oc=AdkSvt6cw4ujWdFe1orNdESA9gX6HIrBNGtNVRnIbBdZ5mr-zvb11LSx4SIyuhYW_To&_nc_zt=23&_nc_ht=scontent.flos5-1.fna&_nc_gid=STd6t1rNuw5eM6aNNglSvA&oh=00_AfLoaP-dI1GIWvFYxtaIb5_fJqEdJzskm7g4SyDkKr8Guw&oe=682198C6" alt="Event 1 Photo 7">
+        <img src="https://scontent.flos5-2.fna.fbcdn.net/v/t39.30808-6/492301647_1093449812819881_4992735102081055053_n.jpg?stp=c839.0.1373.1373a_dst-jpg_s552x414_tt6&_nc_cat=106&ccb=1-7&_nc_sid=92e838&_nc_eui2=AeFVVVmjQmHix6xtrqzQXcDbPXHtef9l3RY9ce15_2XdFjFRiHVhSUi6btOylJcU1DHhG0Zf6fOUlKflyRAu7dG3&_nc_ohc=zA1LG9jakksQ7kNvwFtZ5Lw&_nc_oc=Adk0n-RiJh-5WQlNHw-rLdWFoLMKLggJUSYhoYcyD42cYNGN26XAfY_i8M86p7s69Ts&_nc_zt=23&_nc_ht=scontent.flos5-2.fna&_nc_gid=2T2WhmrXjxiX-JiawLwrXg&oh=00_AfLCpLc1K00-I-CYQOiHt9oI1z0keo1vPQVBCCH7nY4CIQ&oe=682193DC" alt="Event 1 Photo 8">
+      
+        
       </div>
     </div>
   </div>
@@ -129,6 +140,7 @@
         </div>
         </div>
     </div>
+
 
  <!-- 🔹 Footer -->
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
