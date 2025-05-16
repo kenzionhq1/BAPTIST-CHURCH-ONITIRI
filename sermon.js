@@ -16,3 +16,24 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+
+
+
+function handleSermonClick(element) {
+    const video = element.getAttribute("data-video");
+    const title = element.getAttribute("data-title");
+    const details = element.getAttribute("data-details");
+  
+    document.getElementById('sermonVideo').src = video;
+    document.getElementById('sermonTitle').innerText = title;
+    document.getElementById('sermonDateSpeaker').innerText = details;
+    document.getElementById('sermonModal').style.display = 'flex';
+  }
+  
+  function closeSermonModal() {
+    document.getElementById('sermonModal').style.display = 'none';
+    document.getElementById('sermonVideo').src = '';
+  }
+  
+  
+  

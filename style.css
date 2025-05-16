@@ -999,6 +999,25 @@ text-align: center;
   opacity: 1;
 }
 
+.verse-text {
+  margin-top: 40px;
+  font-size: 16px;
+  color: #333;
+  opacity: 0;
+  animation: slideUp 2s ease-in forwards 1s;
+  text-align: center;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+
+
 @media screen and (max-width: 768px) {
   .welcome-text {
     font-size: 1.5rem;
@@ -1019,3 +1038,6 @@ text-align: center;
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+
+

@@ -64,8 +64,25 @@ document.addEventListener("DOMContentLoaded", function () {
     setTimeout(() => {
       document.getElementById("loader-overlay").style.display = "none";
       sessionStorage.setItem("lastShownTime", Date.now().toString());
-    }, 4000); // 3s animation + 1s buffer
+    }, 7000); // 3s animation + 1s buffer
   } else {
     document.getElementById("loader-overlay").style.display = "none";
+  }
+});
+
+
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const verseEl = document.getElementById('bibleVerseText');
+
+  try {
+    const response = await fetch('https://labs.bible.org/api/?passage=random&type=json');
+    const data = await response.json();
+    const verse = `${data[0].bookname} ${data[0].chapter}:${data[0].verse} — "${data[0].text}"`;
+
+    // Display the verse
+    verseEl.textContent = verse;
+  } catch (error) {
+    verseEl.textContent = '“The Lord is my shepherd; I shall not want.” — Psalm 23:1';
   }
 });

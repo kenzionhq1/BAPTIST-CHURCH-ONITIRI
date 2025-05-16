@@ -57,18 +57,70 @@
     <h2>🎤 Live Sermon</h2>
     <div class="sermon-video">
         <iframe 
-            src="https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/bconitiri/videos/1230893622040183/&show_text=false&autoplay=false"
+            src="https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/bconitiri/videos/1013872447543708/&show_text=false&autoplay=false"
             width="100%" 
             height="400" 
             style="border:none;overflow:hidden" 
             scrolling="no" 
             frameborder="0" 
-            allowfullscreen="true" 
-            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share">
+            allowfullscreen="true"
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+            <button class="fullscree-btn" onclick="toggleFullscreenEmbedded()">⛶ Fullscreen</button>
+            <script>
+              function toggleFullscreenEmbedded() {
+              const iframe = document.querySelector('.sermon-video iframe');
+              if (iframe.requestFullscreen) {
+                iframe.requestFullscreen();
+              } else if (iframe.mozRequestFullScreen) { // Firefox
+                iframe.mozRequestFullScreen();
+              } else if (iframe.webkitRequestFullscreen) { // Chrome, Safari, and Opera
+                iframe.webkitRequestFullscreen();
+              } else if (iframe.msRequestFullscreen) { // IE/Edge
+                iframe.msRequestFullscreen();
+              }
+              }
+            </script>
+          <style>
+            
+            iframe {
+            position: relative;
+          }
+
+          .fullscree-btn {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+          }
+
+          .fullscree-btn:hover {
+            background-color: #0056b3;
+          }
+
+          .fullscree-btn:active {
+            background-color: #003f7f;
+          }
+
+         
+
+         
+            
+
+        
+  
+          </style>
         </iframe>
         <div class="video-info">
-          <h3>HOW TO STAY IN LOVE THROUGH  INTIMACY(TOUCHING)</h3>
-        <p>🗓 MAY 4, 2025 | 🎙REV'D DR. A.A. AJUWON</p>
+          <h3>MOTHERS AS HOME BUILDERS | Proverbs 14:1; Hebrews 12:14</h3>
+          <p>🗓 MAY 11, 2025 | 🎙REV'D DR. A.A. AJUWON</p>
           </div>
         </div>
       </section>
@@ -77,40 +129,113 @@
   <section class="sermon-archive">
     <h2>📚 Past Sermons</h2>
     <div class="sermon-grid">
+      <div class="sermon-item"
+      data-video="https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/bconitiri/videos/1230893622040183/&show_text=false&autoplay=false"
+      data-title="HOW TO STAY IN LOVE THROUGH INTIMACY(TOUCHING)"
+      data-details="🗓 May 4, 2025 | 🎙REV'D DR. A.A. AJUWON"
+      onclick="handleSermonClick(this)">
+   <img src="https://scontent.flos5-3.fna.fbcdn.net/v/t15.5256-10/491712256_702771025466237_2283510127499910680_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=282d23&_nc_eui2=AeFziZgnv8T6PY2Vm1rgLHrq-pmGFzPKB9T6mYYXM8oH1K2vxNew0rV-Rff4p-Gcscp3YbWQCMRgYPwKhVnq33Di&_nc_ohc=95eer_QVWAcQ7kNvwE3vV_Y&_nc_oc=AdlwtEL4ovg98se4OaEyzJagmYu4xTzDIs2mVsh_tkvB03JmtLc9hn9sALf7jN3YD_oViphSqz68TysSBFi4PnLS&_nc_zt=23&_nc_ht=scontent.flos5-3.fna&_nc_gid=UHjr2bq-OikjN0il09NE2A&oh=00_AfLwxxNwbJ-enyRXirsALIvMf9gnUggIHQPaeAZLDkUc2A&oe=6822A8C0" alt="Sermon Image" />
+   <h3>HOW TO STAY IN LOVE THROUGH INTIMACY(TOUCHING)</h3>
+   <p>🗓 May 4, 2025 |🎙REV'D DR. A.A. AJUWON</p>
+ </div>
+ 
 
-      <div class="sermon-item">
-        <img src="https://scontent.flos5-3.fna.fbcdn.net/v/t15.5256-10/491712256_702771025466237_2283510127499910680_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=282d23&_nc_eui2=AeFziZgnv8T6PY2Vm1rgLHrq-pmGFzPKB9T6mYYXM8oH1K2vxNew0rV-Rff4p-Gcscp3YbWQCMRgYPwKhVnq33Di&_nc_ohc=95eer_QVWAcQ7kNvwE3vV_Y&_nc_oc=AdlwtEL4ovg98se4OaEyzJagmYu4xTzDIs2mVsh_tkvB03JmtLc9hn9sALf7jN3YD_oViphSqz68TysSBFi4PnLS&_nc_zt=23&_nc_ht=scontent.flos5-3.fna&_nc_gid=UHjr2bq-OikjN0il09NE2A&oh=00_AfLwxxNwbJ-enyRXirsALIvMf9gnUggIHQPaeAZLDkUc2A&oe=6822A8C0" alt="Sermon 1" />
-        <h3>HOUR OF GOD'S FAVOUR | May 1, 2025</h3>
-        <p>🗓 May 4, 2025 | 🎙REV'D DR. A.A. AJUWON</p>
-        <a href="https://www.facebook.com/BaptistChurchOnitiri/videos/1230893622040183/" target="_blank" class="btn">Watch on Facebook</a>
-      </div>
+      <!-- Sermon Video Modal -->
+       
+      <div id="sermonModal" class="sermon-modal" style="display: none;">
+        <div class="sermon-modal-content">
+          <span class="sermon-close-btn" onclick="closeSermonModal()">&times;</span>
+            <div class="video-container">
+            <iframe id="sermonVideo" src="" frameborder="0" allowfullscreen></iframe>
+            <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+            </div>
+            <h3 id="sermonTitle"></h3>
+            <p id="sermonDateSpeaker"></p>
+          </div>
+          </div>
+
+          <style>
+          .video-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            max-width: 800px;
+          }
+
+          .fullscreen-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+          }
+
+          .fullscreen-btn:hover {
+            background-color: #0056b3;
+          }
+
+          .fullscreen-btn:active {
+            background-color: #003f7f;
+          }
+          </style>
+
+          <script>
+          function toggleFullscreen() {
+            const video = document.getElementById("sermonVideo");
+            if (video.requestFullscreen) {
+            video.requestFullscreen();
+            } else if (video.mozRequestFullScreen) { // Firefox
+            video.mozRequestFullScreen();
+            } else if (video.webkitRequestFullscreen) { // Chrome, Safari, and Opera
+            video.webkitRequestFullscreen();
+            } else if (video.msRequestFullscreen) { // IE/Edge
+            video.msRequestFullscreen();
+            }
+          }
+          </script>
 
 
-      <div class="sermon-item">
+      <div class="sermon-item"
+        data-video="https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/bconitiri/videos/1854700695353799/&show_text=false&autoplay=false"
+        data-title="HOUR OF GOD'S FAVOUR | May 1, 2025"
+        data-details="🗓 May 1, 2025 | 🎙 Bro Kunle okunlade"
+        onclick="handleSermonClick(this)">
         <img src="https://scontent.flos5-1.fna.fbcdn.net/v/t15.5256-10/491720224_990355476186589_6215136154906476910_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=282d23&_nc_eui2=AeFlMthxCGnQ32LXjXl_ktNmC13NylqbqBkLXc3KWpuoGaudMelot5dgwKOPIsylUIaUQ67s5EMbH3TLUtBF0nK4&_nc_ohc=8MoEHhriPGoQ7kNvwEVfI4t&_nc_oc=AdkbffCFlGMX5Mean8rDXdLYnmaVkM4C2Yh80a3mHgkT8vuj3MSaJDWWMcC2jTDz1_HehkepvkgSv5VGTz9lBRpX&_nc_zt=23&_nc_ht=scontent.flos5-1.fna&_nc_gid=UHjr2bq-OikjN0il09NE2A&oh=00_AfIFSNhmYDxTlqVuRlF67DNP8iRrQjlfdW-ZDFBtgKBTzg&oe=6822C6DC" alt="Sermon 1" />
         <h3>HOUR OF GOD'S FAVOUR | May 1, 2025</h3>
         <p>🗓 May 1, 2025 | 🎙 Bro Kunle okunlade</p>
-        <a href="https://www.facebook.com/BaptistChurchOnitiri/videos/1854700695353799/" target="_blank" class="btn">Watch on Facebook</a>
       </div>
 
- <div class="sermon-item">
-        <img src="https://scontent.flos5-2.fna.fbcdn.net/v/t15.5256-10/491664646_2437970133268367_8464153708371668886_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=282d23&_nc_eui2=AeExSgSrLDzJyCdd8YNspzVESnjzU3hq4udKePNTeGri5zaMyoJODGHXegG3gf5S3_rNv3HdpBTYnOcCKj2sKnbi&_nc_ohc=mmgJoIkf4ZgQ7kNvwHgVzeM&_nc_oc=Admyy9_Kl7bqq3jJ_MBF2_g1lO-fzLYoKifkjA7LvziLaY7xsLByxEYNHbRF8CRQMIcAqqLJj_nsQxG7jE_gHfJV&_nc_zt=23&_nc_ht=scontent.flos5-2.fna&_nc_gid=UHjr2bq-OikjN0il09NE2A&oh=00_AfL-cDXjrvYsiB3NsilhkZGqnJZJvK1k7qQqw293yTiNDA&oe=6822BAFE" alt="Sermon 3" />
+ <div class="sermon-item"
+        data-video="https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/bconitiri/videos/1854700695353799/&show_text=false&autoplay=false"
+        data-title="2025 Convention Sunday - Entering Into Newness Through Fasting And Prayer (Ezra 8:23)"
+        data-details="🗓 April 27, 2025 | 🎙 REV'D DR. A.A. AJUWON"
+        onclick="handleSermonClick(this)">
+        <img src="https://scontent.flos5-2.fna.fbcdn.net/v/t15.5256-10/491664646_2437970133268367_8464153708371668886_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=282d23&_nc_eui2=AeExSgSrLDzJyCdd8YNspzVESnjzU3hq4udKePNTeGri5zaMyoJODGHXegG3gf5S3_rNv3HdpBTYnOcCKj2sKnbi&_nc_ohc=mmgJoIkf4ZgQ7kNvwHgVzeM&_nc_oc=Admyy9_Kl7bqq3jJ_MBF2_g1lO-fzLYoKifkjA7LvziLaY7xsLByxEYNHbRF8CRQMIcAqqLJj_nsQxG7jE_gHfJV&_nc_zt=23&_nc_ht=scontent.flos5-2.fna&_nc_gid=UHjr2bq-OikjN0il09NE2A&oh=00_AfL-cDXjrvYsiB3NsilhkZGqnJZJvK1k7qQqw293yTiNDA&oe=6822BAFE" alt="Sermon 1" />
         <h3>2025 Convention Sunday - Entering Into Newness Through Fasting And Prayer (Ezra 8:23)</h3>
         <p>🗓 April 27, 2025 | 🎙 REV'D DR. A.A. AJUWON</p>
-        <a href="https://www.facebook.com/BaptistChurchOnitiri/videos/1385976082458234/" target="_blank" class="btn">Watch on Facebook</a>
       </div>
 
-      <div class="sermon-item">
-        <img src="ser.jpg" alt="Sermon 2" />
-        <h3>15 Years Appreciation Service of Rev.Dr. & Pastor(Mrs) Akin-layo Ajuwon</h3>
-        <p>🗓 March 2, 2025 | 🎙 Rev. Dr. Matthew Olawale Awujoola</p>
-        <a href="https://www.facebook.com/BaptistChurchOnitiri/videos/1018512050093968/" target="_blank" class="btn">Watch on Facebook</a>
+      <div class="sermon-item"
+        data-video="https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/bconitiri/videos/1501083797944512/&show_text=false&autoplay=false"
+        data-title="THE TRIUMPHAL ENTRY: SOME LESSONS TO LEARN || Luke 19:28-40        "
+        data-details="🗓 13th April, 2025 | 🎙 REV'D DR. A.A. AJUWON"
+        onclick="handleSermonClick(this)"> 
+        <img src="https://scontent.flos5-2.fna.fbcdn.net/v/t15.5256-10/491538592_1109766147576344_5249857930191374947_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=282d23&_nc_eui2=AeHHhbdIWXxs-OZtVWCZoRM-bAJY3FObrS9sAljcU5utL_tu18oC3Wlf_sCX7bAZWq34uwLix3bFdWlqJ0fU9Lrq&_nc_ohc=G2a8m6RGZJ0Q7kNvwHBl-rz&_nc_oc=AdlNCIRy7HAua0HYfZTVYweFip9X9VwuHeoW9G-ZsE1SlkWPJRXbFwot--VJT_fye7o&_nc_zt=23&_nc_ht=scontent.flos5-2.fna&_nc_gid=8Wq3ezGU2IvR0IEHXwOjVQ&oh=00_AfJg_SYwMstq4RMfJsMtUoGLxdLlFs_D-FIG2l76izwoXg&oe=68284763" alt="Sermon 1" />
+        <h3>THE TRIUMPHAL ENTRY: SOME LESSONS TO LEARN || Luke 19:28-40 </h3>
+        <p>🗓 13th April, 2025 | 🎙 REV'D DR. A.A. AJUWON</p>
       </div>
 
-     
-      <!-- Add more sermon items here as needed -->
-
-    </div>
+  
   </section>
 
   <!-- 🔹 Watch More Link -->
