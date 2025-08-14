@@ -1,39 +1,15 @@
 window.addEventListener('load', () => {
-    setTimeout(() => {
-      document.getElementById('preloader').classList.add('hidden');
-      document.getElementById('main-content').classList.remove('hidden');
-    }, 3000); // adjust if animation is longer
-  });
-  
+  setTimeout(() => {
+    document.getElementById('preloader')?.classList.add('hidden');
+    document.getElementById('main-content')?.classList.remove('hidden');
+  }, 3000);
+});
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const text = "Welcome to Baptist Church Onitiri";
-    const typedText = document.getElementById('typed-text');
-    let index = 0;
-  
-    function typeLetter() {
-      if (index < text.length) {
-        typedText.innerHTML += text.charAt(index);
-        index++;
-        setTimeout(typeLetter, 100); // speed of typing
-      }
-    }
-  
-    typeLetter();
-  });
-  
-
-  
-
- 
-document.addEventListener("DOMContentLoaded", function () {
-  // Check if welcome was already shown
-  if (sessionStorage.getItem("welcomeShown")) {
-    document.getElementById("loader-overlay").classList.add('hidden');
-    return;
-  }
-
-  
+document.addEventListener('DOMContentLoaded', () => {
+  // Typewriter
+  const text = "Welcome to Baptist Church Onitiri";
+  const typedText = document.getElementById('typed-text');
+  let index = 0;
 
   function typeLetter() {
     if (index < text.length) {
@@ -43,46 +19,43 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  typeLetter();
+  if (typedText) typeLetter();
 
+  // Welcome screen (one-time per session)
+  const loader = document.getElementById("loader-overlay");
+  if (!sessionStorage.getItem("welcomeShown")) {
+    sessionStorage.setItem("welcomeShown", "true");
+  } else {
+    loader?.classList.add('hidden');
+  }
 
-  
-});
-
-// Set a 20-minute interval for showing the loader
-const SHOW_INTERVAL = 20 * 60 * 1000; // 20 minutes in milliseconds
-
-document.addEventListener("DOMContentLoaded", function () {
+  // 20-minute loader interval
   const lastShownTime = sessionStorage.getItem("lastShownTime");
   const currentTime = Date.now();
+  const SHOW_INTERVAL = 20 * 60 * 1000;
 
-  // Check if the loader should be shown
   if (!lastShownTime || currentTime - lastShownTime >= SHOW_INTERVAL) {
-    document.getElementById("loader-overlay").classList.remove('hidden');
+    loader?.classList.remove('hidden');
 
-    // Hide loader after animation
     setTimeout(() => {
-      document.getElementById("loader-overlay").style.display = "none";
-      sessionStorage.setItem("lastShownTime", Date.now().toString());
-    }, 7000); // 3s animation + 1s buffer
+      loader?.style && (loader.style.display = "none");
+      sessionStorage.setItem("lastShownTime", currentTime.toString());
+    }, 7000);
   } else {
-    document.getElementById("loader-overlay").style.display = "none";
+    loader?.style && (loader.style.display = "none");
   }
-});
 
-
-
-document.addEventListener("DOMContentLoaded", async () => {
+  // Bible verse
   const verseEl = document.getElementById('bibleVerseText');
-
-  try {
-    const response = await fetch('https://labs.bible.org/api/?passage=random&type=json');
-    const data = await response.json();
-    const verse = `${data[0].bookname} ${data[0].chapter}:${data[0].verse} — "${data[0].text}"`;
-
-    // Display the verse
-    verseEl.textContent = verse;
-  } catch (error) {
-    verseEl.textContent = '“The Lord is my shepherd; I shall not want.” — Psalm 23:1';
+  if (verseEl) {
+    fetch('https://labs.bible.org/api/?passage=random&type=json')
+      .then(response => response.json())
+      .then(data => {
+        const verse = `${data[0].bookname} ${data[0].chapter}:${data[0].verse} — "${data[0].text}"`;
+        verseEl.textContent = verse;
+      })
+      .catch(() => {
+        verseEl.textContent = '“The Lord is my shepherd; I shall not want.” — Psalm 23:1';
+      });
   }
 });

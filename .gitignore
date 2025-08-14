@@ -23,3 +23,6 @@ build/
 
 # Ignore node_modules
 node_modules/
+
+app-release-bundle.aab
+app-release-signed.apk

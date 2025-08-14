@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline</title>
+  <link rel="stylesheet" href="/styles/style.css">
+  <link rel="manifest" href="manifest.json">
+  <script src="pwa-install.js" defer></script>
+  <script src="load.js" defer></script>
+  
+</head>
+
+<body style="text-align: center; padding: 50px;">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      text-align: center;
+      padding: 50px;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+    h2 {
+      color: #004080;
+    }
+    button {
+      padding: 10px 20px;
+      font-weight: bold;
+      background: #ffcc00;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #004080;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h2>You are offline</h2>
+  <p>Connect to the internet and try again.</p>
+  <button onclick="location.reload()">Try Again</button>
+</body>
+</html>
