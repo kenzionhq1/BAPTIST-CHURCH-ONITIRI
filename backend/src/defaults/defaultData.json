@@ -1,0 +1,31 @@
+{
+  "items": [
+    {
+      "category": "sermon",
+      "entityId": "default-sermon-1",
+      "title": "Sample Sermon (Replace with your real seeds)",
+      "date": "2025-01-01",
+      "link": "https://www.youtube.com/watch?v=xxxxxxxxxxx",
+      "speaker": "Guest Minister",
+      "coverImageLink": ""
+    },
+    {
+      "category": "event",
+      "entityId": "default-event-1",
+      "title": "Sample Event (Replace with your real seeds)",
+      "date": "2025-02-01",
+      "eventTime": "10:00 AM",
+      "summary": "Event description goes here.",
+      "eventPlacement": "upcoming",
+      "coverImageLink": "https://example.com/event-cover.jpg",
+      "galleryLinks": ["https://example.com/gallery-1.jpg"]
+    }
+  ],
+  "featuredSermon": {
+    "title": "Sample Featured Sermon",
+    "date": "2025-01-01",
+    "speaker": "Guest Minister",
+    "embed": "<iframe src=\"https://www.youtube.com/embed/xxxxxxxxxxx\" />"
+  }
+}
+

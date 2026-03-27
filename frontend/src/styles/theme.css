@@ -1,0 +1,33 @@
+:root {
+  color-scheme: light;
+}
+
+.page-shell {
+  @apply min-h-screen bg-gradient-to-b from-slate-50 via-slate-50 to-slate-100;
+}
+
+.pattern-bg {
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(31, 111, 235, 0.08), transparent 25%),
+    radial-gradient(circle at 80% 0%, rgba(250, 204, 21, 0.08), transparent 22%),
+    radial-gradient(circle at 70% 70%, rgba(15, 61, 110, 0.08), transparent 32%);
+}
+
+.section-shell {
+  @apply relative mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-14 md:px-8;
+}
+
+.page-fade {
+  animation: pageFade 320ms ease;
+}
+
+@keyframes pageFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
