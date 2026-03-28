@@ -47,6 +47,7 @@ const EventsPage = () => {
     alt: string;
     eventName: string;
   } | null>(null);
+  const [openGalleryEvents, setOpenGalleryEvents] = useState<string[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -243,46 +244,68 @@ const EventsPage = () => {
                       {eventGallery.date} · {eventGallery.time}
                     </p>
                   </div>
-                  <span className="rounded-full bg-brand-blue/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-blue">
-                    {eventGallery.images.length} photos
-                  </span>
-                </div>
-
-                <div className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">
-                  {eventGallery.images.map((image, index) => (
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-brand-blue/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-blue">
+                      {eventGallery.images.length} photos
+                    </span>
                     <button
-                      key={`${eventGallery.id}-${index}`}
                       type="button"
                       onClick={() =>
-                        setActiveGalleryImage({
-                          src: image,
-                          alt: `${eventGallery.name} gallery image ${index + 1}`,
-                          eventName: eventGallery.name
-                        })
+                        setOpenGalleryEvents((prev) =>
+                          prev.includes(eventGallery.id)
+                            ? prev.filter((id) => id !== eventGallery.id)
+                            : [...prev, eventGallery.id]
+                        )
                       }
-                      className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                      className="btn-ghost px-3 py-1 text-xs"
+                      aria-expanded={openGalleryEvents.includes(eventGallery.id)}
+                      aria-controls={`event-gallery-${eventGallery.id}`}
                     >
-                      <img
-                        src={image}
-                        alt={`${eventGallery.name} gallery image ${index + 1}`}
-                        className="h-52 w-full object-cover transition duration-300 group-hover:scale-105"
-                        loading="lazy"
-                        onError={(event) => {
-                          const target = event.currentTarget;
-                          if (target.dataset.fallbackApplied) {
-                            return;
-                          }
-                          target.dataset.fallbackApplied = "true";
-                          target.src = "/event.jpg";
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition group-hover:opacity-100" />
-                      <span className="absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-brand-navy opacity-0 transition group-hover:opacity-100">
-                        View full image
-                      </span>
+                      {openGalleryEvents.includes(eventGallery.id) ? "Hide Photos" : "Show Photos"}
                     </button>
-                  ))}
+                  </div>
                 </div>
+
+                {openGalleryEvents.includes(eventGallery.id) && (
+                  <div
+                    id={`event-gallery-${eventGallery.id}`}
+                    className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4"
+                  >
+                    {eventGallery.images.map((image, index) => (
+                      <button
+                        key={`${eventGallery.id}-${index}`}
+                        type="button"
+                        onClick={() =>
+                          setActiveGalleryImage({
+                            src: image,
+                            alt: `${eventGallery.name} gallery image ${index + 1}`,
+                            eventName: eventGallery.name
+                          })
+                        }
+                        className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                      >
+                        <img
+                          src={image}
+                          alt={`${eventGallery.name} gallery image ${index + 1}`}
+                          className="h-52 w-full object-cover transition duration-300 group-hover:scale-105"
+                          loading="lazy"
+                          onError={(event) => {
+                            const target = event.currentTarget;
+                            if (target.dataset.fallbackApplied) {
+                              return;
+                            }
+                            target.dataset.fallbackApplied = "true";
+                            target.src = "/event.jpg";
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition group-hover:opacity-100" />
+                        <span className="absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-brand-navy opacity-0 transition group-hover:opacity-100">
+                          View full image
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
