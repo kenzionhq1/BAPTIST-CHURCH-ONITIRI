@@ -127,6 +127,8 @@ const AdminPage = () => {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [uploadStage, setUploadStage] = useState("");
   const [galleryConverting, setGalleryConverting] = useState(false);
+  const [mediaUploading, setMediaUploading] = useState(false);
+  const [mediaUploads, setMediaUploads] = useState<Array<{ url: string; name: string }>>([]);
   const [loadingAdmin, setLoadingAdmin] = useState(false);
   const [authReady, setAuthReady] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -141,6 +143,36 @@ const AdminPage = () => {
     speaker: "",
     embed: ""
   });
+  const maxUploadSizeMb = 25;
+  const maxUploadBytes = maxUploadSizeMb * 1024 * 1024;
+  const imageMimeTypes = useMemo(
+    () => new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/jpg"]),
+    []
+  );
+  const resourceMimeTypes = useMemo(
+    () => new Set(["application/pdf", "image/jpeg", "image/png", "image/webp", "image/gif", "image/jpg"]),
+    []
+  );
+
+  const validateFiles = (files: File[], kind: "image" | "resource") => {
+    const allowed = kind === "resource" ? resourceMimeTypes : imageMimeTypes;
+    const valid: File[] = [];
+    const invalid: string[] = [];
+
+    files.forEach((file) => {
+      if (file.size > maxUploadBytes) {
+        invalid.push(`${file.name} (max ${maxUploadSizeMb}MB)`);
+        return;
+      }
+      if (!allowed.has(file.type)) {
+        invalid.push(`${file.name} (unsupported type)`);
+        return;
+      }
+      valid.push(file);
+    });
+
+    return { valid, invalid };
+  };
 
   const toDateInputValue = (value: string) => {
     if (!value) return "";
@@ -316,9 +348,21 @@ const AdminPage = () => {
       return;
     }
 
+    const { valid, invalid } = validateFiles(files, "image");
+    if (invalid.length > 0) {
+      setStatus({
+        tone: "error",
+        message: `Some files were skipped: ${invalid.join(", ")}`
+      });
+      setTimeout(() => setStatus(null), 5000);
+    }
+    if (valid.length === 0) {
+      return;
+    }
+
     setGalleryConverting(true);
     try {
-      const uploaded = await uploadFiles(files);
+      const uploaded = await uploadFiles(valid);
       const fileUrls = uploaded.map((item) => item.fileUrl).filter(Boolean);
       appendGalleryLinks(fileUrls);
       setStatus({
@@ -331,6 +375,48 @@ const AdminPage = () => {
       setTimeout(() => setStatus(null), 4000);
     } finally {
       setGalleryConverting(false);
+    }
+  };
+
+  const handleMediaUpload = async (files: File[]) => {
+    if (!files.length) return;
+    const { valid, invalid } = validateFiles(files, "image");
+    if (invalid.length > 0) {
+      setStatus({
+        tone: "error",
+        message: `Some files were skipped: ${invalid.join(", ")}`
+      });
+      setTimeout(() => setStatus(null), 5000);
+    }
+    if (valid.length === 0) {
+      return;
+    }
+    setMediaUploading(true);
+    try {
+      const uploaded = await uploadFiles(valid);
+      setMediaUploads((prev) => [
+        ...uploaded.map((item) => ({ url: item.fileUrl, name: item.fileName })),
+        ...prev
+      ]);
+      setStatus({ tone: "success", message: "Media uploaded to Cloudinary." });
+      setTimeout(() => setStatus(null), 4000);
+    } catch (error) {
+      console.error("Media upload failed", error);
+      setStatus({ tone: "error", message: "Media upload failed. Please try again." });
+      setTimeout(() => setStatus(null), 4000);
+    } finally {
+      setMediaUploading(false);
+    }
+  };
+
+  const copyToClipboard = async (value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setStatus({ tone: "success", message: "Link copied to clipboard." });
+      setTimeout(() => setStatus(null), 3000);
+    } catch {
+      setStatus({ tone: "error", message: "Could not copy link." });
+      setTimeout(() => setStatus(null), 3000);
     }
   };
 
@@ -424,7 +510,19 @@ const AdminPage = () => {
       let fileName = "";
 
       if (form.file) {
-        const uploaded = await uploadFiles([form.file]);
+        const kind = isResource ? "resource" : "image";
+        const { valid, invalid } = validateFiles([form.file], kind);
+        if (invalid.length > 0 || valid.length === 0) {
+          setStatus({
+            tone: "error",
+            message: `Upload failed: ${invalid.join(", ") || "Unsupported file"}`
+          });
+          setSubmitting(false);
+          setUploadProgress(null);
+          setUploadStage("");
+          return;
+        }
+        const uploaded = await uploadFiles([valid[0]]);
         fileUrl = uploaded[0]?.fileUrl || "";
         fileName = uploaded[0]?.fileName || form.file.name;
         setUploadProgress(40);
@@ -1172,6 +1270,66 @@ const AdminPage = () => {
                     <Trash2 className="h-4 w-4" />
                     Delete
                   </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="card mt-6 space-y-4 text-left">
+          <SectionHeader
+            eyebrow="Media"
+            title="Cloudinary Gallery"
+            subtitle="Upload images once and reuse the links anywhere on the site."
+            alignment="left"
+          />
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-slate-700">
+              Upload new media
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => handleMediaUpload(Array.from(e.target.files || []))}
+                className="mt-2 w-full rounded-xl border border-dashed border-brand-blue/60 bg-white px-3 py-6 text-sm focus:border-brand-blue focus:outline-none"
+              />
+              <p className="mt-1 text-xs font-normal text-slate-500">
+                Images are stored in Cloudinary and stay permanent.
+              </p>
+            </label>
+            {mediaUploading && (
+              <p className="text-xs font-semibold text-brand-blue">Uploading to Cloudinary...</p>
+            )}
+          </div>
+          {mediaUploads.length === 0 ? (
+            <p className="text-sm text-slate-600">
+              No media uploaded yet. Upload images to get permanent links.
+            </p>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {mediaUploads.map((item, index) => (
+                <div
+                  key={`${item.url}-${index}`}
+                  className="overflow-hidden rounded-2xl border border-slate-200 bg-white/80"
+                >
+                  <img
+                    src={item.url}
+                    alt={item.name || "Cloudinary asset"}
+                    className="h-32 w-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="space-y-2 p-3">
+                    <p className="text-xs font-semibold text-brand-navy line-clamp-2">
+                      {item.name || "Uploaded asset"}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(item.url)}
+                      className="btn-ghost w-full justify-center text-xs"
+                    >
+                      Copy link
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

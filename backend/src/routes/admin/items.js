@@ -2,6 +2,7 @@ const express = require("express");
 
 const { AdminItem, HiddenEntity } = require("../../models");
 const { createSnapshot } = require("../../services/historyService");
+const { cleanupCloudinaryUrls } = require("../../utils/cloudinary");
 const { getAdminView, getMergedItemsByCategory } = require("../../services/mergeService");
 const { isObjectId } = require("../../utils/objectId");
 const { validateAdminItem, isNonEmptyString } = require("../../utils/validation");
@@ -76,6 +77,16 @@ function toItemResponse(doc) {
     createdAt: item.createdAt || null,
     updatedAt: item.updatedAt || null,
   };
+}
+
+function collectCloudinaryUrls(item) {
+  if (!item) return [];
+  return [
+    item.coverImageLink,
+    item.fileUrl,
+    ...(item.galleryLinks || []),
+    ...(item.galleryFileUrls || []),
+  ].filter((entry) => typeof entry === "string" && entry.trim().length > 0);
 }
 
 async function unhideDefault(category, entityId) {
@@ -231,6 +242,8 @@ router.delete("/items/:id", async (req, res, next) => {
 
     if (existing) {
       const category = existing.category;
+
+      await cleanupCloudinaryUrls(collectCloudinaryUrls(existing));
 
       if (isNonEmptyString(existing.entityId)) {
         await HiddenEntity.updateOne(

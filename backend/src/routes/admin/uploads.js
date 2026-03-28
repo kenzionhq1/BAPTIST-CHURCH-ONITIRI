@@ -40,9 +40,23 @@ const storage = hasCloudinary
       },
     });
 
+const allowedMimeTypes = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "application/pdf",
+]);
+
 const upload = multer({
   storage,
   limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
+  fileFilter(req, file, cb) {
+    if (allowedMimeTypes.has(file.mimetype)) {
+      return cb(null, true);
+    }
+    return cb(new Error("Unsupported file type"));
+  },
 });
 
 function getBaseUrl(req) {
