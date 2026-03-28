@@ -5,6 +5,8 @@ import { fetchPublicResources, type PublicResource } from "../utils/backend";
 
 const ResourcesPage = () => {
   const [allResources, setAllResources] = useState<PublicResource[]>([]);
+  const previewCount = 3;
+  const [showAllResources, setShowAllResources] = useState(false);
   const getFileTypeLabel = (file: string) => {
     try {
       const url = new URL(file, window.location.origin);
@@ -71,7 +73,7 @@ const ResourcesPage = () => {
           subtitle="Download outlines for Bible Study, Sunday School, and more."
         />
         <div className="grid gap-4 md:grid-cols-2">
-          {allResources.map((resource) => (
+          {(showAllResources ? allResources : allResources.slice(0, previewCount)).map((resource) => (
             <div key={resource.id || `${resource.title}-${resource.date}`} className="card text-left">
               <h3 className="text-xl font-semibold text-brand-navy">{resource.title}</h3>
               <p className="text-sm text-slate-600">{resource.date}</p>
@@ -93,6 +95,17 @@ const ResourcesPage = () => {
             </div>
           ))}
         </div>
+        {allResources.length > previewCount && (
+          <div className="mt-6 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowAllResources((prev) => !prev)}
+              className="btn-ghost"
+            >
+              {showAllResources ? "Show Less" : "See More Resources"}
+            </button>
+          </div>
+        )}
       </section>
     </div>
   );

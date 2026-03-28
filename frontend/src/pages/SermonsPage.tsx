@@ -17,12 +17,15 @@ const SermonsPage = () => {
     speaker: "",
     embed: ""
   });
+  const previewCount = 3;
   const featuredEmbed = useMemo(() => toEmbedVideoUrl(featuredSermon.embed || ""), [featuredSermon.embed]);
   const categories = useMemo(() => ["all", ...new Set(allSermons.map((s) => s.category))], [allSermons]);
   const [filter, setFilter] = useState("all");
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [showAllSermons, setShowAllSermons] = useState(false);
 
   const filtered = filter === "all" ? allSermons : allSermons.filter((s) => s.category === filter);
+  const visibleSermons = showAllSermons ? filtered : filtered.slice(0, previewCount);
 
   const openModal = (id: string) => setActiveId(id);
   const closeModal = () => setActiveId(null);
@@ -110,7 +113,10 @@ const SermonsPage = () => {
           {categories.map((category) => (
             <button
               key={category}
-              onClick={() => setFilter(category)}
+              onClick={() => {
+                setFilter(category);
+                setShowAllSermons(false);
+              }}
               className={clsx(
                 "rounded-full px-4 py-2 text-sm font-semibold transition",
                 filter === category
@@ -124,7 +130,7 @@ const SermonsPage = () => {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((sermon) => (
+          {visibleSermons.map((sermon) => (
             <div key={sermon.id} className="card h-full text-left">
               <div className="overflow-hidden rounded-xl">
                 <img
@@ -161,6 +167,17 @@ const SermonsPage = () => {
             </div>
           ))}
         </div>
+        {filtered.length > previewCount && (
+          <div className="mt-6 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowAllSermons((prev) => !prev)}
+              className="btn-ghost"
+            >
+              {showAllSermons ? "Show Less" : "See More Sermons"}
+            </button>
+          </div>
+        )}
       </section>
 
       {activeSermon && (

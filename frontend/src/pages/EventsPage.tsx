@@ -5,6 +5,7 @@ import { fetchPublicEvents, type PublicEvent } from "../utils/backend";
 
 const EventsPage = () => {
   const [allEvents, setAllEvents] = useState<PublicEvent[]>([]);
+  const previewCount = 3;
   const upcomingEvents = useMemo(
     () => allEvents.filter((event) => event.placement === "upcoming"),
     [allEvents]
@@ -18,6 +19,12 @@ const EventsPage = () => {
     () => upcomingEvents.filter((event) => event.id !== featuredEvent?.id),
     [upcomingEvents, featuredEvent?.id]
   );
+  const [showAllUpcoming, setShowAllUpcoming] = useState(false);
+  const [showAllPast, setShowAllPast] = useState(false);
+  const visibleUpcomingEvents = showAllUpcoming
+    ? otherUpcomingEvents
+    : otherUpcomingEvents.slice(0, previewCount);
+  const visiblePastEvents = showAllPast ? pastEvents : pastEvents.slice(0, previewCount);
   const galleryByEvent = useMemo(
     () =>
       allEvents
@@ -130,7 +137,7 @@ const EventsPage = () => {
         />
         {otherUpcomingEvents.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-3">
-            {otherUpcomingEvents.map((event) => (
+            {visibleUpcomingEvents.map((event) => (
               <div key={event.id} className="card overflow-hidden p-0 text-left">
                 <div className="relative h-40 w-full">
                   <img
@@ -167,6 +174,17 @@ const EventsPage = () => {
             No extra upcoming events right now.
           </div>
         )}
+        {otherUpcomingEvents.length > previewCount && (
+          <div className="mt-6 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowAllUpcoming((prev) => !prev)}
+              className="btn-ghost"
+            >
+              {showAllUpcoming ? "Show Less" : "See More Events"}
+            </button>
+          </div>
+        )}
       </section>
 
       <section className="section-shell">
@@ -177,7 +195,7 @@ const EventsPage = () => {
         />
         {pastEvents.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-3">
-            {pastEvents.map((event) => (
+            {visiblePastEvents.map((event) => (
               <div key={event.id} className="card text-left">
                 <h3 className="text-xl font-semibold text-brand-navy">{event.name}</h3>
                 <p className="text-sm text-slate-600">{event.summary}</p>
@@ -190,6 +208,17 @@ const EventsPage = () => {
         ) : (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white/70 p-6 text-sm text-slate-600">
             No past events yet.
+          </div>
+        )}
+        {pastEvents.length > previewCount && (
+          <div className="mt-6 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowAllPast((prev) => !prev)}
+              className="btn-ghost"
+            >
+              {showAllPast ? "Show Less" : "See More Past Events"}
+            </button>
           </div>
         )}
       </section>
