@@ -2,14 +2,42 @@ import Hero from "../components/Hero";
 import SectionHeader from "../components/common/SectionHeader";
 import { serviceTimes } from "../utils/data";
 import { Link } from "react-router-dom";
-import { useMemo } from "react";
-import { getFeaturedSermon, getMergedEvents, toEmbedVideoUrl } from "../utils/adminContent";
+import { useEffect, useMemo, useState } from "react";
+import { toEmbedVideoUrl } from "../utils/adminContent";
+import { fetchPublicEvents, fetchPublicSermons, type FeaturedSermon, type PublicEvent } from "../utils/backend";
 
 const HomePage = () => {
-  const allEvents = useMemo(() => getMergedEvents(), []);
-  const featuredSermon = useMemo(() => getFeaturedSermon(), []);
-  const liveEmbed = useMemo(() => toEmbedVideoUrl(featuredSermon.embed), [featuredSermon.embed]);
+  const [allEvents, setAllEvents] = useState<PublicEvent[]>([]);
+  const [featuredSermon, setFeaturedSermon] = useState<FeaturedSermon>({
+    title: "",
+    date: "",
+    speaker: "",
+    embed: ""
+  });
+  const liveEmbed = useMemo(() => toEmbedVideoUrl(featuredSermon.embed || ""), [featuredSermon.embed]);
   const upcoming = allEvents.find((event) => event.placement === "upcoming") || allEvents?.[0];
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const load = async () => {
+      try {
+        const [events, sermons] = await Promise.all([fetchPublicEvents(), fetchPublicSermons()]);
+        if (!isMounted) return;
+        setAllEvents(events);
+        if (sermons.featured) {
+          setFeaturedSermon(sermons.featured);
+        }
+      } catch (error) {
+        console.error("Failed to load home data", error);
+      }
+    };
+
+    load();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div className="space-y-16">

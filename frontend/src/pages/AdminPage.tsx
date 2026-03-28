@@ -16,26 +16,26 @@ import {
 import Hero from "../components/Hero";
 import SectionHeader from "../components/common/SectionHeader";
 import {
-  addAdminItem,
-  clearAdminItems,
-  deleteManagedContent,
-  fileToDataUrl,
-  getAdminHistory,
-  getEventsForAdmin,
-  getFeaturedSermon,
-  getAdminItems,
-  getResourcesForAdmin,
-  getSermonsForAdmin,
-  removeAdminItem,
-  restoreAdminHistoryEntry,
+  clearAdminItems as clearAdminItemsRemote,
+  createAdminItem,
+  deleteAdminItem,
+  fetchAdminHistory,
+  fetchAdminView,
+  isAdminObjectId,
+  restoreAdminHistory,
   saveFeaturedSermon,
-  undoLastAdminChange,
-  upsertEventItem,
-  upsertSermonItem,
   type AdminCategory,
   type AdminHistoryEntry,
-  type AdminItem
-} from "../utils/adminContent";
+  type AdminView,
+  type BackendItem,
+  type FeaturedSermon,
+  undoAdminHistory,
+  updateAdminItem,
+  uploadFiles,
+  toPublicEvent,
+  toPublicSermon,
+  toPublicResource
+} from "../utils/backend";
 
 type UploadForm = {
   title: string;
@@ -58,9 +58,45 @@ type StatusMessage = {
   message: string;
 } | null;
 
-type EventRecord = ReturnType<typeof getEventsForAdmin>[number];
-type SermonRecord = ReturnType<typeof getSermonsForAdmin>[number];
-type ResourceRecord = ReturnType<typeof getResourcesForAdmin>[number];
+type EventRecord = {
+  id: string;
+  entityId: string;
+  name: string;
+  date: string;
+  dateInput: string;
+  time: string;
+  summary: string;
+  cover: string;
+  coverImageLink: string;
+  gallery: string[];
+  placement: "upcoming" | "past";
+  source: "default" | "admin";
+  link: string;
+};
+
+type SermonRecord = {
+  id: string;
+  entityId: string;
+  title: string;
+  date: string;
+  dateInput: string;
+  speaker: string;
+  category: string;
+  image: string;
+  link: string;
+  coverImageLink: string;
+  source: "default" | "admin";
+};
+
+type ResourceRecord = {
+  id: string;
+  entityId: string;
+  title: string;
+  date: string;
+  dateInput: string;
+  file: string;
+  source: "default" | "admin";
+};
 
 const categoryLabels: Record<AdminCategory, string> = {
   sermon: "Sermon",
@@ -84,13 +120,14 @@ const AdminPage = () => {
     galleryFiles: [],
     existingGalleryImages: []
   });
-  const [items, setItems] = useState<AdminItem[]>([]);
+  const [adminView, setAdminView] = useState<AdminView | null>(null);
   const [historyEntries, setHistoryEntries] = useState<AdminHistoryEntry[]>([]);
   const [status, setStatus] = useState<StatusMessage>(null);
   const [submitting, setSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [uploadStage, setUploadStage] = useState("");
   const [galleryConverting, setGalleryConverting] = useState(false);
+  const [loadingAdmin, setLoadingAdmin] = useState(false);
   const [authReady, setAuthReady] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [passcode, setPasscode] = useState("");
@@ -98,29 +135,99 @@ const AdminPage = () => {
   const [summaryCollapsed, setSummaryCollapsed] = useState(false);
   const [eventEditingId, setEventEditingId] = useState<string | null>(null);
   const [sermonEditingId, setSermonEditingId] = useState<string | null>(null);
-  const [liveSermon, setLiveSermon] = useState(() => getFeaturedSermon());
+  const [liveSermon, setLiveSermon] = useState<FeaturedSermon>({
+    title: "",
+    date: "",
+    speaker: "",
+    embed: ""
+  });
 
-  const eventRecords = useMemo(() => getEventsForAdmin(), [items]);
-  const sermonRecords = useMemo(() => getSermonsForAdmin(), [items]);
-  const resourceRecords = useMemo(() => getResourcesForAdmin(), [items]);
+  const toDateInputValue = (value: string) => {
+    if (!value) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+    const parsed = new Date(value).toISOString();
+    return parsed ? parsed.slice(0, 10) : "";
+  };
+
+  const mapEventRecord = (item: BackendItem): EventRecord => {
+    const publicEvent = toPublicEvent(item);
+    return {
+      ...publicEvent,
+      entityId: item.entityId || "",
+      dateInput: toDateInputValue(publicEvent.date),
+      coverImageLink: item.coverImageLink || ""
+    };
+  };
+
+  const mapSermonRecord = (item: BackendItem): SermonRecord => {
+    const publicSermon = toPublicSermon(item);
+    return {
+      ...publicSermon,
+      entityId: item.entityId || "",
+      dateInput: toDateInputValue(publicSermon.date),
+      coverImageLink: item.coverImageLink || ""
+    };
+  };
+
+  const mapResourceRecord = (item: BackendItem): ResourceRecord => {
+    const publicResource = toPublicResource(item);
+    return {
+      ...publicResource,
+      entityId: item.entityId || "",
+      dateInput: toDateInputValue(publicResource.date)
+    };
+  };
+
+  const eventRecords = useMemo(
+    () => (adminView?.itemsByCategory.event || []).map(mapEventRecord),
+    [adminView]
+  );
+  const sermonRecords = useMemo(
+    () => (adminView?.itemsByCategory.sermon || []).map(mapSermonRecord),
+    [adminView]
+  );
+  const resourceRecords = useMemo(
+    () => (adminView?.itemsByCategory.resource || []).map(mapResourceRecord),
+    [adminView]
+  );
   const upcomingEventRecords = useMemo(
     () => eventRecords.filter((event) => event.placement === "upcoming"),
     [eventRecords]
   );
+  const flatItems = useMemo(
+    () =>
+      adminView
+        ? [
+            ...adminView.itemsByCategory.sermon,
+            ...adminView.itemsByCategory.event,
+            ...adminView.itemsByCategory.resource
+          ]
+        : [],
+    [adminView]
+  );
+  const adminItems = useMemo(() => flatItems.filter((item) => isAdminObjectId(item.id)), [flatItems]);
   const authStorageKey = "bco_admin_auth_v1";
   const adminPasscode =
     import.meta.env.VITE_ADMIN_PASSCODE || (import.meta.env.DEV ? "admin" : "");
   const sessionDurationMs = 12 * 60 * 60 * 1000;
 
-  const refreshItems = () => {
-    setItems(getAdminItems());
-    setHistoryEntries(getAdminHistory());
+  const refreshItems = async () => {
+    setLoadingAdmin(true);
+    try {
+      const [view, history] = await Promise.all([fetchAdminView(), fetchAdminHistory()]);
+      setAdminView(view);
+      setHistoryEntries(history);
+      if (view?.featuredSermon) {
+        setLiveSermon(view.featuredSermon);
+      }
+    } catch (error) {
+      console.error("Failed to refresh admin data", error);
+      setStatus({ tone: "error", message: "Could not load admin data. Check your connection." });
+      setTimeout(() => setStatus(null), 4000);
+    } finally {
+      setLoadingAdmin(false);
+    }
   };
-
-  useEffect(() => {
-    setItems(getAdminItems());
-    setHistoryEntries(getAdminHistory());
-  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -143,6 +250,13 @@ const AdminPage = () => {
 
     setAuthReady(true);
   }, [authStorageKey]);
+
+  useEffect(() => {
+    if (!isAuthorized) {
+      return;
+    }
+    refreshItems();
+  }, [isAuthorized]);
 
   const handleChange = (key: keyof UploadForm, value: UploadForm[keyof UploadForm]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -204,15 +318,16 @@ const AdminPage = () => {
 
     setGalleryConverting(true);
     try {
-      const dataUrls = await Promise.all(files.map((file) => fileToDataUrl(file)));
-      appendGalleryLinks(dataUrls);
+      const uploaded = await uploadFiles(files);
+      const fileUrls = uploaded.map((item) => item.fileUrl).filter(Boolean);
+      appendGalleryLinks(fileUrls);
       setStatus({
         tone: "success",
-        message: `${dataUrls.length} gallery image${dataUrls.length === 1 ? "" : "s"} added as link entries.`
+        message: `${fileUrls.length} gallery image${fileUrls.length === 1 ? "" : "s"} added as link entries.`
       });
       setTimeout(() => setStatus(null), 4000);
     } catch {
-      setStatus({ tone: "error", message: "Could not convert gallery uploads. Please try again." });
+      setStatus({ tone: "error", message: "Gallery upload failed. Please try again." });
       setTimeout(() => setStatus(null), 4000);
     } finally {
       setGalleryConverting(false);
@@ -301,94 +416,85 @@ const AdminPage = () => {
     }
 
     setSubmitting(true);
-    setUploadStage("Preparing upload...");
-    setUploadProgress(0);
+    setUploadStage("Uploading files...");
+    setUploadProgress(10);
 
     try {
-      const filesToRead = [form.file, ...(isEvent ? form.galleryFiles : [])].filter(
-        Boolean
-      ) as File[];
-      const totalBytes = filesToRead.reduce((sum, file) => sum + file.size, 0);
-      const fileProgress = new Map<File, number>();
+      let fileUrl = "";
+      let fileName = "";
 
-      const updateOverallProgress = () => {
-        if (!totalBytes) {
-          setUploadProgress((prev) => (prev === null ? 25 : prev));
-          return;
-        }
-        const loaded = Array.from(fileProgress.values()).reduce((sum, value) => sum + value, 0);
-        const percent = Math.min(85, Math.round((loaded / totalBytes) * 85));
-        setUploadProgress(percent);
-      };
+      if (form.file) {
+        const uploaded = await uploadFiles([form.file]);
+        fileUrl = uploaded[0]?.fileUrl || "";
+        fileName = uploaded[0]?.fileName || form.file.name;
+        setUploadProgress(40);
+      }
 
-      const readFile = async (file: File) => {
-        setUploadStage("Processing files...");
-        const result = await fileToDataUrl(file, ({ loaded }) => {
-          fileProgress.set(file, loaded);
-          updateOverallProgress();
-        });
-        fileProgress.set(file, file.size);
-        updateOverallProgress();
-        return result;
-      };
-
-      const fileDataUrl = form.file ? await readFile(form.file) : "";
       const newGalleryLinks = form.galleryLinksText
         .split(/\r?\n|,/)
         .map((entry) => entry.trim())
         .filter((entry) => entry.length > 0);
-      const uploadedGalleryImages = isEvent
-        ? await Promise.all(form.galleryFiles.map((file) => readFile(file)))
-        : [];
+
+      let uploadedGalleryUrls: string[] = [];
+      if (isEvent && form.galleryFiles.length > 0) {
+        setUploadStage("Uploading gallery...");
+        const uploadedGallery = await uploadFiles(form.galleryFiles);
+        uploadedGalleryUrls = uploadedGallery.map((item) => item.fileUrl).filter(Boolean);
+        setUploadProgress(60);
+      }
+
       const combinedEventGallery = Array.from(
         new Set(
-          [
-            ...form.existingGalleryImages,
-            ...newGalleryLinks,
-            ...uploadedGalleryImages
-          ].filter((entry) => entry.trim().length > 0)
+          [...form.existingGalleryImages, ...newGalleryLinks, ...uploadedGalleryUrls].filter(
+            (entry) => entry.trim().length > 0
+          )
         )
       );
+
       const galleryLinks = isEvent
-        ? combinedEventGallery.filter((entry) => !entry.startsWith("data:"))
+        ? combinedEventGallery.filter((entry) => !entry.includes("/uploads/"))
         : [];
-      const galleryFileDataUrls = isEvent
-        ? combinedEventGallery.filter((entry) => entry.startsWith("data:"))
+      const galleryFileUrls = isEvent
+        ? combinedEventGallery.filter((entry) => entry.includes("/uploads/"))
         : [];
 
       setUploadStage("Saving changes...");
-      setUploadProgress((prev) => Math.max(prev ?? 0, 90));
+      setUploadProgress(85);
 
-      const payload = {
+      const payload: Partial<BackendItem> & { category: AdminCategory } = {
         title: form.title.trim(),
         date: form.date,
         category,
         link: form.link.trim(),
-        coverImageLink: form.coverImageLink.trim(),
-        fileName: form.file?.name || "",
-        fileDataUrl,
-        galleryLinks,
-        galleryFileDataUrls,
         speaker: form.speaker.trim(),
         eventTime: form.eventTime.trim(),
         summary: form.summary.trim(),
-        eventPlacement: form.eventPlacement,
-        entityId: isEvent
-          ? eventEditingId || undefined
-          : isSermon
-            ? sermonEditingId || undefined
-            : undefined
+        eventPlacement: form.eventPlacement
       };
 
-      if (isEvent) {
-        upsertEventItem(payload, eventEditingId || undefined);
-      } else if (isSermon) {
-        upsertSermonItem(payload, sermonEditingId || undefined);
-      } else {
-        addAdminItem(payload);
+      const coverImageLinkValue = form.coverImageLink.trim();
+      if (coverImageLinkValue) {
+        payload.coverImageLink = coverImageLinkValue;
       }
 
-      refreshItems();
+      if (fileUrl) {
+        payload.fileUrl = fileUrl;
+        payload.fileName = fileName;
+      }
+
+      if (isEvent) {
+        payload.galleryLinks = galleryLinks;
+        payload.galleryFileUrls = galleryFileUrls;
+      }
+
+      const editId = isEvent ? eventEditingId : isSermon ? sermonEditingId : null;
+      if (editId) {
+        await updateAdminItem(editId, payload);
+      } else {
+        await createAdminItem(payload);
+      }
+
+      await refreshItems();
       resetForm();
       setStatus({ tone: "success", message: "Changes saved successfully." });
       setTimeout(() => setStatus(null), 4000);
@@ -398,7 +504,8 @@ const AdminPage = () => {
         setUploadProgress(null);
         setUploadStage("");
       }, 800);
-    } catch {
+    } catch (error) {
+      console.error(error);
       setStatus({ tone: "error", message: "Upload failed. Please try again." });
       setUploadStage("Upload failed");
       setTimeout(() => {
@@ -411,7 +518,15 @@ const AdminPage = () => {
   };
 
   const loadEventIntoForm = (event: EventRecord) => {
-    const existingGalleryImages = event.gallery.filter((entry) => entry !== event.cover);
+    const coverFallback = "/event.jpg";
+    const coverLink =
+      event.coverImageLink ||
+      (!event.cover.startsWith("data:") && event.cover !== coverFallback ? event.cover : "");
+
+    const exclude = new Set([event.cover, event.coverImageLink]);
+    const existingGalleryImages = Array.from(
+      new Set(event.gallery.filter((entry) => entry && !exclude.has(entry)))
+    );
 
     setEventEditingId(event.id);
     setSermonEditingId(null);
@@ -421,7 +536,7 @@ const AdminPage = () => {
       date: event.dateInput,
       category: "event",
       link: event.link || "",
-      coverImageLink: event.coverImageLink || (event.cover.startsWith("data:") ? "" : event.cover),
+      coverImageLink: coverLink,
       eventTime: event.time,
       summary: event.summary,
       eventPlacement: event.placement,
@@ -438,7 +553,12 @@ const AdminPage = () => {
   };
 
   const loadSermonIntoForm = (sermon: SermonRecord) => {
-    setSermonEditingId(sermon.entityId);
+    const fallbackImage = "/sermon-hero.jpeg";
+    const coverLink =
+      sermon.coverImageLink ||
+      (!sermon.image.startsWith("data:") && sermon.image !== fallbackImage ? sermon.image : "");
+
+    setSermonEditingId(sermon.id);
     setEventEditingId(null);
     setForm((prev) => ({
       ...prev,
@@ -446,7 +566,7 @@ const AdminPage = () => {
       date: sermon.dateInput,
       category: "sermon",
       link: sermon.link,
-      coverImageLink: sermon.image.startsWith("data:") ? "" : sermon.image,
+      coverImageLink: coverLink,
       speaker: sermon.speaker,
       eventTime: "",
       summary: "",
@@ -463,59 +583,56 @@ const AdminPage = () => {
     setTimeout(() => setStatus(null), 5000);
   };
 
-  const handleManagedDelete = (
+  const handleManagedDelete = async (
     category: AdminCategory,
-    entityId: string,
+    id: string,
     label: string
   ) => {
-    const deleted = deleteManagedContent(category, entityId);
+    try {
+      await deleteAdminItem(id, category);
+      await refreshItems();
+      if (
+        (category === "sermon" && sermonEditingId === id) ||
+        (category === "event" && eventEditingId === id)
+      ) {
+        resetForm();
+      }
 
-    if (!deleted) {
-      setStatus({ tone: "error", message: "Nothing to delete for this record." });
+      setStatus({ tone: "success", message: `${label} deleted successfully.` });
       setTimeout(() => setStatus(null), 4000);
-      return;
+    } catch (error) {
+      console.error("Failed to delete item", error);
+      setStatus({ tone: "error", message: "Delete failed. Please try again." });
+      setTimeout(() => setStatus(null), 4000);
     }
+  };
 
-    refreshItems();
-    if (
-      (category === "sermon" && sermonEditingId === entityId) ||
-      (category === "event" && eventEditingId === entityId)
-    ) {
+  const handleUndoLastChange = async () => {
+    try {
+      await undoAdminHistory();
+      await refreshItems();
       resetForm();
-    }
-
-    setStatus({ tone: "success", message: `${label} deleted successfully.` });
-    setTimeout(() => setStatus(null), 4000);
-  };
-
-  const handleUndoLastChange = () => {
-    const restored = undoLastAdminChange();
-
-    if (!restored) {
+      setStatus({ tone: "success", message: "Last change undone successfully." });
+      setTimeout(() => setStatus(null), 4000);
+    } catch (error) {
+      console.error("Undo failed", error);
       setStatus({ tone: "error", message: "No change history available yet." });
-      return;
+      setTimeout(() => setStatus(null), 4000);
     }
-
-    refreshItems();
-    resetForm();
-    setLiveSermon(getFeaturedSermon());
-    setStatus({ tone: "success", message: "Last change undone successfully." });
-    setTimeout(() => setStatus(null), 4000);
   };
 
-  const handleRestoreHistoryEntry = (entryId: string) => {
-    const restored = restoreAdminHistoryEntry(entryId);
-
-    if (!restored) {
+  const handleRestoreHistoryEntry = async (entryId: string) => {
+    try {
+      await restoreAdminHistory(entryId);
+      await refreshItems();
+      resetForm();
+      setStatus({ tone: "success", message: "History snapshot restored." });
+      setTimeout(() => setStatus(null), 4000);
+    } catch (error) {
+      console.error("Restore failed", error);
       setStatus({ tone: "error", message: "Could not restore this history entry." });
-      return;
+      setTimeout(() => setStatus(null), 4000);
     }
-
-    refreshItems();
-    resetForm();
-    setLiveSermon(getFeaturedSermon());
-    setStatus({ tone: "success", message: "History snapshot restored." });
-    setTimeout(() => setStatus(null), 4000);
   };
 
   if (!authReady) {
@@ -931,7 +1048,7 @@ const AdminPage = () => {
                   </p>
                 </div>
                 <p className="mt-3 text-xs text-slate-500">
-                  This saves to local admin storage. If anything goes wrong, use Undo Last Change.
+                  Saves to the backend immediately and records a 30-day snapshot for Undo/Restore.
                 </p>
               </>
             ) : (
@@ -983,7 +1100,7 @@ const AdminPage = () => {
             <SectionHeader
               eyebrow="Saved content"
               title="Recent uploads"
-              subtitle="These are the entries currently powering your site pages."
+              subtitle="Admin uploads and overrides currently powering your site pages."
               alignment="left"
             />
             <div className="flex gap-2">
@@ -993,9 +1110,22 @@ const AdminPage = () => {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  clearAdminItems();
-                  refreshItems();
+                onClick={async () => {
+                  if (adminItems.length === 0) {
+                    setStatus({ tone: "error", message: "No admin uploads to clear." });
+                    setTimeout(() => setStatus(null), 3000);
+                    return;
+                  }
+                  try {
+                    await clearAdminItemsRemote(adminItems);
+                    await refreshItems();
+                    setStatus({ tone: "success", message: "Admin uploads cleared." });
+                    setTimeout(() => setStatus(null), 4000);
+                  } catch (error) {
+                    console.error("Failed to clear admin items", error);
+                    setStatus({ tone: "error", message: "Unable to clear admin uploads." });
+                    setTimeout(() => setStatus(null), 4000);
+                  }
                 }}
                 className="btn-ghost text-red-700 hover:border-red-300 hover:text-red-800"
               >
@@ -1005,13 +1135,13 @@ const AdminPage = () => {
             </div>
           </div>
 
-          {items.length === 0 ? (
+          {adminItems.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-4 text-sm text-slate-600">
               No uploads yet. Add your first sermon, event, or resource above.
             </div>
           ) : (
             <div className="space-y-3">
-              {items.map((item) => (
+              {adminItems.map((item) => (
                 <div
                   key={item.id}
                   className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white/70 p-4 md:flex-row md:items-center md:justify-between"
@@ -1034,10 +1164,9 @@ const AdminPage = () => {
                   </div>
                   <button
                     type="button"
-                    onClick={() => {
-                      removeAdminItem(item.id);
-                      refreshItems();
-                    }}
+                    onClick={() =>
+                      handleManagedDelete(item.category, item.id, categoryLabels[item.category])
+                    }
                     className="btn-ghost w-fit text-red-700 hover:border-red-300 hover:text-red-800"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -1084,9 +1213,7 @@ const AdminPage = () => {
                       <History className="h-4 w-4 text-brand-blue" />
                       {entry.label}
                     </p>
-                    <p className="text-xs text-slate-600">
-                      {new Date(entry.createdAt).toLocaleString()} • {entry.items.length} saved items
-                    </p>
+                    <p className="text-xs text-slate-600">{new Date(entry.createdAt).toLocaleString()}</p>
                   </div>
                   <button
                     type="button"
@@ -1153,10 +1280,17 @@ const AdminPage = () => {
                   return;
                 }
 
-                saveFeaturedSermon(liveSermon);
-                refreshItems();
-                setStatus({ tone: "success", message: "Live sermon updated." });
-                setTimeout(() => setStatus(null), 4000);
+                saveFeaturedSermon(liveSermon)
+                  .then(() => refreshItems())
+                  .then(() => {
+                    setStatus({ tone: "success", message: "Live sermon updated." });
+                    setTimeout(() => setStatus(null), 4000);
+                  })
+                  .catch((error) => {
+                    console.error("Failed to save live sermon", error);
+                    setStatus({ tone: "error", message: "Could not update live sermon." });
+                    setTimeout(() => setStatus(null), 4000);
+                  });
               }}
             >
               Save Live Sermon
@@ -1174,7 +1308,7 @@ const AdminPage = () => {
           {sermonRecords.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-2">
               {sermonRecords.map((sermon) => (
-                <div key={sermon.entityId} className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+                <div key={sermon.id} className="rounded-2xl border border-slate-200 bg-white/70 p-4">
                   <p className="text-sm font-semibold text-brand-navy">{sermon.title}</p>
                   <p className="text-xs text-slate-600">
                     {sermon.date} • {sermon.speaker}
@@ -1196,7 +1330,7 @@ const AdminPage = () => {
                       onClick={() =>
                         handleManagedDelete(
                           "sermon",
-                          sermon.entityId,
+                          sermon.id,
                           sermon.source === "default" ? "Old sermon" : "Sermon"
                         )
                       }
@@ -1223,7 +1357,7 @@ const AdminPage = () => {
           {resourceRecords.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-2">
               {resourceRecords.map((resource: ResourceRecord) => (
-                <div key={resource.entityId} className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+                <div key={resource.id} className="rounded-2xl border border-slate-200 bg-white/70 p-4">
                   <p className="text-sm font-semibold text-brand-navy">{resource.title}</p>
                   <p className="text-xs text-slate-600">{resource.date}</p>
                   <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-blue">
@@ -1239,7 +1373,7 @@ const AdminPage = () => {
                       onClick={() =>
                         handleManagedDelete(
                           "resource",
-                          resource.entityId,
+                          resource.id,
                           resource.source === "default" ? "Old resource" : "Resource"
                         )
                       }

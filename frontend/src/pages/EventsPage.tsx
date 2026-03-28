@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import SectionHeader from "../components/common/SectionHeader";
 import Hero from "../components/Hero";
-import { getMergedEvents } from "../utils/adminContent";
+import { fetchPublicEvents, type PublicEvent } from "../utils/backend";
 
 const EventsPage = () => {
-  const allEvents = useMemo(() => getMergedEvents(), []);
+  const [allEvents, setAllEvents] = useState<PublicEvent[]>([]);
   const upcomingEvents = useMemo(
     () => allEvents.filter((event) => event.placement === "upcoming"),
     [allEvents]
@@ -40,6 +40,18 @@ const EventsPage = () => {
     alt: string;
     eventName: string;
   } | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchPublicEvents()
+      .then((events) => {
+        if (isMounted) setAllEvents(events);
+      })
+      .catch((error) => console.error("Failed to load events", error));
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {

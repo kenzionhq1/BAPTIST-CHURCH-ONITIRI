@@ -5,6 +5,10 @@ services:
     rootDir: backend
     buildCommand: npm install
     startCommand: npm start
+    disk:
+      name: uploads
+      mountPath: /var/data/uploads
+      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
@@ -12,3 +16,15 @@ services:
         sync: false
       - key: ADMIN_TOKEN
         sync: false
+      - key: BASE_URL
+        value: https://baptist-church-onitiri.onrender.com
+      - key: UPLOAD_DIR
+        value: /var/data/uploads
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: CLOUDINARY_FOLDER
+        value: baptist-church-onitiri

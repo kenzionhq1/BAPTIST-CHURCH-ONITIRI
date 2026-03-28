@@ -87,6 +87,8 @@ export const sermons = [
   },
   {
   id: 7,
+    title: "Stewardship of Influence (Revival)",
+    date: "February 22, 2026",
     speaker: "Revd. Dr. Matthew Olawale Awujoola",
     category: "discipleship",
     image: "https://scontent-los4-1.xx.fbcdn.net/v/t15.5256-10/639049485_1440898137695296_3432892959497200668_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=032300&_nc_eui2=AeGxOxB76GnpEYIr3GUeu9_6Z6vudIUUUrBnq-50hRRSsPnOoO71mUmlfj_q8h1W8Zdg_Wt1moyddG_i5Hp9J8SP&_nc_ohc=2z7snMOLPvEQ7kNvwHtn7tf&_nc_oc=Adn9ecZAyrKEeOZssi1p03X4HA-O8TNdZFXiireGug1L4OfWiUSiYyJpmG7CHPgnUoQ&_nc_zt=23&_nc_ht=scontent-los4-1.xx&_nc_gid=pYMLRpPRKI7UTcftvYnVmg&_nc_ss=8&oh=00_Afz82DTzsxGN1xPqOEdnqAufFHVspdsLH2FpG_PyiQ8L5g&oe=69BB4636",

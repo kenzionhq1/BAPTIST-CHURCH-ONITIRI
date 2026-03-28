@@ -1,10 +1,10 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SectionHeader from "../components/common/SectionHeader";
 import Hero from "../components/Hero";
-import { getMergedResources } from "../utils/adminContent";
+import { fetchPublicResources, type PublicResource } from "../utils/backend";
 
 const ResourcesPage = () => {
-  const allResources = useMemo(() => getMergedResources(), []);
+  const [allResources, setAllResources] = useState<PublicResource[]>([]);
   const getFileTypeLabel = (file: string) => {
     try {
       const url = new URL(file, window.location.origin);
@@ -43,6 +43,18 @@ const ResourcesPage = () => {
     }
   };
 
+  useEffect(() => {
+    let isMounted = true;
+    fetchPublicResources()
+      .then((resources) => {
+        if (isMounted) setAllResources(resources);
+      })
+      .catch((error) => console.error("Failed to load resources", error));
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <div className="space-y-16">
       <Hero
@@ -60,7 +72,7 @@ const ResourcesPage = () => {
         />
         <div className="grid gap-4 md:grid-cols-2">
           {allResources.map((resource) => (
-            <div key={resource.entityId || `${resource.title}-${resource.date}`} className="card text-left">
+            <div key={resource.id || `${resource.title}-${resource.date}`} className="card text-left">
               <h3 className="text-xl font-semibold text-brand-navy">{resource.title}</h3>
               <p className="text-sm text-slate-600">{resource.date}</p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-brand-blue">

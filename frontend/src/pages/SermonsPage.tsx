@@ -1,31 +1,52 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SectionHeader from "../components/common/SectionHeader";
 import Hero from "../components/Hero";
 import clsx from "clsx";
 import {
   appendAutoplayToEmbedUrl,
-  getFeaturedSermon,
-  getMergedSermons,
   toEmbedVideoUrl,
   toPublicVideoUrl
 } from "../utils/adminContent";
+import { fetchPublicSermons, type FeaturedSermon, type PublicSermon } from "../utils/backend";
 
 const SermonsPage = () => {
-  const allSermons = useMemo(() => getMergedSermons(), []);
-  const featuredSermon = useMemo(() => getFeaturedSermon(), []);
-  const featuredEmbed = useMemo(() => toEmbedVideoUrl(featuredSermon.embed), [featuredSermon.embed]);
+  const [allSermons, setAllSermons] = useState<PublicSermon[]>([]);
+  const [featuredSermon, setFeaturedSermon] = useState<FeaturedSermon>({
+    title: "",
+    date: "",
+    speaker: "",
+    embed: ""
+  });
+  const featuredEmbed = useMemo(() => toEmbedVideoUrl(featuredSermon.embed || ""), [featuredSermon.embed]);
   const categories = useMemo(() => ["all", ...new Set(allSermons.map((s) => s.category))], [allSermons]);
   const [filter, setFilter] = useState("all");
-  const [activeId, setActiveId] = useState<number | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const filtered = filter === "all" ? allSermons : allSermons.filter((s) => s.category === filter);
 
-  const openModal = (id: number) => setActiveId(id);
+  const openModal = (id: string) => setActiveId(id);
   const closeModal = () => setActiveId(null);
 
   const activeSermon = activeId
     ? allSermons.find((s) => s.id === activeId) || filtered.find((s) => s.id === activeId)
     : null;
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchPublicSermons()
+      .then((result) => {
+        if (!isMounted) return;
+        setAllSermons(result.items);
+        if (result.featured) {
+          setFeaturedSermon(result.featured);
+        }
+      })
+      .catch((error) => console.error("Failed to load sermons", error));
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div className="space-y-16">
