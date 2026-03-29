@@ -1,13 +1,6 @@
 import SectionHeader from "../components/common/SectionHeader";
 import Hero from "../components/Hero";
 
-const gallery = [
-  { title: "Sunday School Director", name: "Mr. Wale Assagba" },
-  { title: "Youth President", name: "Sis. Tobi Osopale" },
-  { title: "Prayer Squad Lead", name: "Team Lead" },
-  { title: "BSF President", name: "Campus Lead" }
-];
-
 const AboutPage = () => {
   return (
     <div className="space-y-16">
@@ -53,13 +46,9 @@ const AboutPage = () => {
           title="Meet Our Deacons"
           subtitle="Leaders who steward our vision and care for our people."
         />
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {gallery.map((item) => (
-            <div key={item.title} className="card text-left">
-              <h4 className="text-lg font-semibold text-brand-navy">{item.title}</h4>
-              <p className="text-sm text-slate-600">{item.name}</p>
-            </div>
-          ))}
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white/70 p-6 text-center text-sm text-slate-600">
+          <p className="font-semibold text-brand-navy">Deacon profiles coming soon</p>
+          <p className="mt-2 text-slate-600">We're preparing information about our leadership team. Check back soon!</p>
         </div>
       </section>
 
@@ -69,15 +58,9 @@ const AboutPage = () => {
           title="Meet Our Pastors"
           subtitle="Shepherds equipping the saints for the work of ministry."
         />
-        <div className="card max-w-3xl text-left">
-          <div className="space-y-2">
-            <h3 className="text-2xl font-semibold text-brand-navy">Rev. &amp; Pastor (Mrs.)</h3>
-            <p className="text-sm text-slate-600">Church Pastor and Pastormiss</p>
-            <p className="text-sm text-slate-600">
-              Passionate about teaching the Word, discipling believers, and empowering leaders to serve the city.
-            </p>
-            <p className="text-xs uppercase tracking-[0.2em] text-brand-blue">Photos currently hidden</p>
-          </div>
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white/70 p-6 text-center text-sm text-slate-600">
+          <p className="font-semibold text-brand-navy">Pastoral profiles coming soon</p>
+          <p className="mt-2 text-slate-600">We're preparing detailed information about our pastoral team. Thank you for your patience!</p>
         </div>
       </section>
     </div>
