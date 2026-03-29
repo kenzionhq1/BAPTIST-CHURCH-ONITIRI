@@ -26,6 +26,7 @@ export type BackendItem = {
   summary: string;
   eventPlacement: EventPlacement;
   entityId: string;
+  order?: number;
   isDefault?: boolean;
   cover?: string;
   createdAt?: string;

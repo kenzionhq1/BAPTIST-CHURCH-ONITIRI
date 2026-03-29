@@ -26,6 +26,7 @@ const AdminItemSchema = new mongoose.Schema(
       index: true,
     },
     entityId: { type: String, default: "", index: true },
+    order: { type: Number, default: 0 },
 
     isDeleted: { type: Boolean, default: false, index: true },
     deletedAt: { type: Date, default: null },

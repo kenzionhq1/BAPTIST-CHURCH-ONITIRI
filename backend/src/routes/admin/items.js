@@ -24,7 +24,30 @@ const ITEM_FIELDS = [
   "eventTime",
   "summary",
   "eventPlacement",
+  "order",
 ];
+
+async function assignOrderForNewItem(category, position) {
+  // position: "top" or "bottom" (or undefined, default to "bottom")
+  const existingItems = await AdminItem.find({ category, isDeleted: { $ne: true } })
+    .select("order")
+    .lean();
+
+  if (existingItems.length === 0) {
+    return 0;
+  }
+
+  const orders = existingItems.map((item) => item.order || 0);
+  const maxOrder = Math.max(...orders);
+  const minOrder = Math.min(...orders);
+
+  if (position === "top") {
+    return maxOrder + 1;
+  } else {
+    // Default to bottom
+    return minOrder - 1;
+  }
+}
 
 function pickItemPatch(body) {
   const patch = {};
@@ -72,6 +95,7 @@ function toItemResponse(doc) {
     summary: item.summary || "",
     eventPlacement: item.eventPlacement || "",
     entityId: item.entityId || "",
+    order: typeof item.order === "number" ? item.order : 0,
     isDefault: Boolean(item.entityId),
     cover: item.coverImageLink || item.fileUrl || "",
     createdAt: item.createdAt || null,
@@ -121,6 +145,7 @@ router.post("/items", async (req, res, next) => {
     }
 
     const entityId = (body.entityId || "").toString().trim();
+    const position = (body.position || "bottom").toString().trim();
     const patch = pickItemPatch(body);
 
     let doc;
@@ -141,9 +166,13 @@ router.post("/items", async (req, res, next) => {
 
       await unhideDefault(category, entityId);
     } else {
+      // Assign order based on position
+      const assignedOrder = await assignOrderForNewItem(category, position);
+
       const nextData = {
         category,
         entityId: "",
+        order: assignedOrder,
         ...buildNextItem(null, patch),
       };
 

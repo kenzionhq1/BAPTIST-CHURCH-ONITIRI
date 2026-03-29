@@ -21,6 +21,7 @@ function normalizeDbItem(doc) {
     summary: item.summary || "",
     eventPlacement: item.eventPlacement || "",
     entityId: item.entityId || "",
+    order: typeof item.order === "number" ? item.order : 0,
     isDefault: Boolean(item.entityId),
     cover: item.coverImageLink || item.fileUrl || "",
     createdAt: item.createdAt || null,
@@ -116,6 +117,9 @@ async function getMergedItemsByCategory(category) {
   }
 
   for (const c of custom || []) merged.push(normalizeDbItem(c));
+
+  // Sort by order descending (higher order = appears first)
+  merged.sort((a, b) => (b.order || 0) - (a.order || 0));
 
   return merged.filter(Boolean);
 }

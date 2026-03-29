@@ -51,6 +51,7 @@ type UploadForm = {
   galleryLinksText: string;
   galleryFiles: File[];
   existingGalleryImages: string[];
+  position: "top" | "bottom";
 };
 
 type StatusMessage = {
@@ -118,7 +119,8 @@ const AdminPage = () => {
     file: null,
     galleryLinksText: "",
     galleryFiles: [],
-    existingGalleryImages: []
+    existingGalleryImages: [],
+    position: "bottom"
   });
   const [adminView, setAdminView] = useState<AdminView | null>(null);
   const [historyEntries, setHistoryEntries] = useState<AdminHistoryEntry[]>([]);
@@ -135,6 +137,15 @@ const AdminPage = () => {
   const [passcode, setPasscode] = useState("");
   const [authError, setAuthError] = useState("");
   const [summaryCollapsed, setSummaryCollapsed] = useState(false);
+  const [sectionCollapsed, setSectionCollapsed] = useState({
+    recentUploads: true,
+    cloudinary: true,
+    history: true,
+    liveControl: true,
+    sermons: true,
+    resources: true,
+    events: true
+  });
   const [eventEditingId, setEventEditingId] = useState<string | null>(null);
   const [sermonEditingId, setSermonEditingId] = useState<string | null>(null);
   const [liveSermon, setLiveSermon] = useState<FeaturedSermon>({
@@ -326,6 +337,10 @@ const AdminPage = () => {
     setIsAuthorized(false);
   };
 
+  const toggleSection = (key: keyof typeof sectionCollapsed) => {
+    setSectionCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
   const appendGalleryLinks = (links: string[]) => {
     if (links.length === 0) {
       return;
@@ -441,7 +456,8 @@ const AdminPage = () => {
       file: null,
       galleryLinksText: "",
       galleryFiles: [],
-      existingGalleryImages: []
+      existingGalleryImages: [],
+      position: "bottom"
     });
     setEventEditingId(null);
     setSermonEditingId(null);
@@ -589,6 +605,8 @@ const AdminPage = () => {
       if (editId) {
         await updateAdminItem(editId, payload);
       } else {
+        // Include position for new items
+        (payload as any).position = form.position;
         await createAdminItem(payload);
       }
 
@@ -866,6 +884,28 @@ const AdminPage = () => {
                   </button>
                 ))}
               </div>
+            </label>
+            <label className="text-sm font-semibold text-slate-700">
+              Position of new upload
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {["top", "bottom"].map((pos) => (
+                  <button
+                    type="button"
+                    key={pos}
+                    onClick={() => handleChange("position", pos as UploadForm["position"])}
+                    className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold capitalize transition ${
+                      form.position === pos
+                        ? "border-brand-blue bg-brand-blue/10 text-brand-navy"
+                        : "border-slate-200 text-slate-700 hover:border-brand-blue"
+                    }`}
+                  >
+                    {pos === "top" ? "↑ Top" : "↓ Bottom"}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1 text-xs font-normal text-slate-500">
+                Choose where new uploads appear in the section.
+              </p>
             </label>
             <label className="text-sm font-semibold text-slate-700">
               {isSermon
@@ -1201,7 +1241,24 @@ const AdminPage = () => {
               subtitle="Admin uploads and overrides currently powering your site pages."
               alignment="left"
             />
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => toggleSection("recentUploads")}
+                className="btn-ghost px-3 py-1 text-xs"
+              >
+                {sectionCollapsed.recentUploads ? (
+                  <>
+                    <ChevronDown className="h-4 w-4" />
+                    Expand
+                  </>
+                ) : (
+                  <>
+                    <ChevronUp className="h-4 w-4" />
+                    Collapse
+                  </>
+                )}
+              </button>
               <button type="button" onClick={refreshItems} className="btn-ghost">
                 <RefreshCw className="h-4 w-4" />
                 Refresh
@@ -1233,106 +1290,130 @@ const AdminPage = () => {
             </div>
           </div>
 
-          {adminItems.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-4 text-sm text-slate-600">
-              No uploads yet. Add your first sermon, event, or resource above.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {adminItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white/70 p-4 md:flex-row md:items-center md:justify-between"
-                >
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold text-brand-navy">{item.title}</p>
-                    <p className="text-xs text-slate-600">
-                      {categoryLabels[item.category]} • {item.date}
-                    </p>
-                    {item.link && (
-                      <a
-                        href={item.link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs text-brand-blue hover:underline"
-                      >
-                        Open link
-                      </a>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleManagedDelete(item.category, item.id, categoryLabels[item.category])
-                    }
-                    className="btn-ghost w-fit text-red-700 hover:border-red-300 hover:text-red-800"
+          {!sectionCollapsed.recentUploads &&
+            (adminItems.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-4 text-sm text-slate-600">
+                No uploads yet. Add your first sermon, event, or resource above.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {adminItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white/70 p-4 md:flex-row md:items-center md:justify-between"
                   >
-                    <Trash2 className="h-4 w-4" />
-                    Delete
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-brand-navy">{item.title}</p>
+                      <p className="text-xs text-slate-600">
+                        {categoryLabels[item.category]} • {item.date}
+                      </p>
+                      {item.link && (
+                        <a
+                          href={item.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs text-brand-blue hover:underline"
+                        >
+                          Open link
+                        </a>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleManagedDelete(item.category, item.id, categoryLabels[item.category])
+                      }
+                      className="btn-ghost w-fit text-red-700 hover:border-red-300 hover:text-red-800"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ))}
         </div>
 
         <div className="card mt-6 space-y-4 text-left">
-          <SectionHeader
-            eyebrow="Media"
-            title="Cloudinary Gallery"
-            subtitle="Upload images once and reuse the links anywhere on the site."
-            alignment="left"
-          />
-          <div className="space-y-3">
-            <label className="text-sm font-semibold text-slate-700">
-              Upload new media
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => handleMediaUpload(Array.from(e.target.files || []))}
-                className="mt-2 w-full rounded-xl border border-dashed border-brand-blue/60 bg-white px-3 py-6 text-sm focus:border-brand-blue focus:outline-none"
-              />
-              <p className="mt-1 text-xs font-normal text-slate-500">
-                Images are stored in Cloudinary and stay permanent.
-              </p>
-            </label>
-            {mediaUploading && (
-              <p className="text-xs font-semibold text-brand-blue">Uploading to Cloudinary...</p>
-            )}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <SectionHeader
+              eyebrow="Media"
+              title="Cloudinary Gallery"
+              subtitle="Upload images once and reuse the links anywhere on the site."
+              alignment="left"
+            />
+            <button
+              type="button"
+              onClick={() => toggleSection("cloudinary")}
+              className="btn-ghost px-3 py-1 text-xs"
+            >
+              {sectionCollapsed.cloudinary ? (
+                <>
+                  <ChevronDown className="h-4 w-4" />
+                  Expand
+                </>
+              ) : (
+                <>
+                  <ChevronUp className="h-4 w-4" />
+                  Collapse
+                </>
+              )}
+            </button>
           </div>
-          {mediaUploads.length === 0 ? (
-            <p className="text-sm text-slate-600">
-              No media uploaded yet. Upload images to get permanent links.
-            </p>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {mediaUploads.map((item, index) => (
-                <div
-                  key={`${item.url}-${index}`}
-                  className="overflow-hidden rounded-2xl border border-slate-200 bg-white/80"
-                >
-                  <img
-                    src={item.url}
-                    alt={item.name || "Cloudinary asset"}
-                    className="h-32 w-full object-cover"
-                    loading="lazy"
+          {!sectionCollapsed.cloudinary && (
+            <>
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-slate-700">
+                  Upload new media
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleMediaUpload(Array.from(e.target.files || []))}
+                    className="mt-2 w-full rounded-xl border border-dashed border-brand-blue/60 bg-white px-3 py-6 text-sm focus:border-brand-blue focus:outline-none"
                   />
-                  <div className="space-y-2 p-3">
-                    <p className="text-xs font-semibold text-brand-navy line-clamp-2">
-                      {item.name || "Uploaded asset"}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(item.url)}
-                      className="btn-ghost w-full justify-center text-xs"
+                  <p className="mt-1 text-xs font-normal text-slate-500">
+                    Images are stored in Cloudinary and stay permanent.
+                  </p>
+                </label>
+                {mediaUploading && (
+                  <p className="text-xs font-semibold text-brand-blue">Uploading to Cloudinary...</p>
+                )}
+              </div>
+              {mediaUploads.length === 0 ? (
+                <p className="text-sm text-slate-600">
+                  No media uploaded yet. Upload images to get permanent links.
+                </p>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {mediaUploads.map((item, index) => (
+                    <div
+                      key={`${item.url}-${index}`}
+                      className="overflow-hidden rounded-2xl border border-slate-200 bg-white/80"
                     >
-                      Copy link
-                    </button>
-                  </div>
+                      <img
+                        src={item.url}
+                        alt={item.name || "Cloudinary asset"}
+                        className="h-32 w-full object-cover"
+                        loading="lazy"
+                      />
+                      <div className="space-y-2 p-3">
+                        <p className="text-xs font-semibold text-brand-navy line-clamp-2">
+                          {item.name || "Uploaded asset"}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(item.url)}
+                          className="btn-ghost w-full justify-center text-xs"
+                        >
+                          Copy link
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </div>
 
@@ -1344,226 +1425,369 @@ const AdminPage = () => {
               subtitle="Undo recent changes or restore an earlier snapshot."
               alignment="left"
             />
-            <button
-              type="button"
-              onClick={handleUndoLastChange}
-              className="btn-ghost disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={historyEntries.length === 0}
-            >
-              <Undo2 className="h-4 w-4" />
-              Undo Last Change
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => toggleSection("history")}
+                className="btn-ghost px-3 py-1 text-xs"
+              >
+                {sectionCollapsed.history ? (
+                  <>
+                    <ChevronDown className="h-4 w-4" />
+                    Expand
+                  </>
+                ) : (
+                  <>
+                    <ChevronUp className="h-4 w-4" />
+                    Collapse
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleUndoLastChange}
+                className="btn-ghost disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={historyEntries.length === 0}
+              >
+                <Undo2 className="h-4 w-4" />
+                Undo Last Change
+              </button>
+            </div>
           </div>
 
-          {historyEntries.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-4 text-sm text-slate-600">
-              No history yet. Once you make changes, snapshots will appear here.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {historyEntries.slice(0, 10).map((entry) => (
-                <div
-                  key={entry.id}
-                  className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white/70 p-4 md:flex-row md:items-center md:justify-between"
-                >
-                  <div className="space-y-1">
-                    <p className="flex items-center gap-2 text-sm font-semibold text-brand-navy">
-                      <History className="h-4 w-4 text-brand-blue" />
-                      {entry.label}
-                    </p>
-                    <p className="text-xs text-slate-600">{new Date(entry.createdAt).toLocaleString()}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRestoreHistoryEntry(entry.id)}
-                    className="btn-ghost w-fit"
+          {!sectionCollapsed.history &&
+            (historyEntries.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-4 text-sm text-slate-600">
+                No history yet. Once you make changes, snapshots will appear here.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {historyEntries.slice(0, 10).map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white/70 p-4 md:flex-row md:items-center md:justify-between"
                   >
-                    Restore This Version
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+                    <div className="space-y-1">
+                      <p className="flex items-center gap-2 text-sm font-semibold text-brand-navy">
+                        <History className="h-4 w-4 text-brand-blue" />
+                        {entry.label}
+                      </p>
+                      <p className="text-xs text-slate-600">
+                        {new Date(entry.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRestoreHistoryEntry(entry.id)}
+                      className="btn-ghost w-fit"
+                    >
+                      Restore This Version
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ))}
         </div>
 
         <div className="card mt-6 space-y-4 text-left">
-          <SectionHeader
-            eyebrow="Live control"
-            title="Update Live Sermon"
-            subtitle="This controls the live sermon section on Home and Sermons pages."
-            alignment="left"
-          />
-          <div className="grid gap-4 md:grid-cols-2">
-            <label className="text-sm font-semibold text-slate-700">
-              Title
-              <input
-                value={liveSermon.title}
-                onChange={(e) => setLiveSermon((prev) => ({ ...prev, title: e.target.value }))}
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand-blue focus:outline-none"
-              />
-            </label>
-            <label className="text-sm font-semibold text-slate-700">
-              Date
-              <input
-                value={liveSermon.date}
-                onChange={(e) => setLiveSermon((prev) => ({ ...prev, date: e.target.value }))}
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand-blue focus:outline-none"
-              />
-            </label>
-            <label className="text-sm font-semibold text-slate-700">
-              Speaker
-              <input
-                value={liveSermon.speaker}
-                onChange={(e) => setLiveSermon((prev) => ({ ...prev, speaker: e.target.value }))}
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand-blue focus:outline-none"
-              />
-            </label>
-            <label className="text-sm font-semibold text-slate-700">
-              Video link / embed URL
-              <input
-                value={liveSermon.embed}
-                onChange={(e) => setLiveSermon((prev) => ({ ...prev, embed: e.target.value }))}
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand-blue focus:outline-none"
-                placeholder="Facebook or YouTube link"
-              />
-            </label>
-          </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <SectionHeader
+              eyebrow="Live control"
+              title="Update Live Sermon"
+              subtitle="This controls the live sermon section on Home and Sermons pages."
+              alignment="left"
+            />
             <button
               type="button"
-              className="btn-primary"
-              onClick={() => {
-                if (!liveSermon.embed.trim()) {
-                  setStatus({ tone: "error", message: "Live sermon needs a video link." });
-                  return;
-                }
-
-                saveFeaturedSermon(liveSermon)
-                  .then(() => refreshItems())
-                  .then(() => {
-                    setStatus({ tone: "success", message: "Live sermon updated." });
-                    setTimeout(() => setStatus(null), 4000);
-                  })
-                  .catch((error) => {
-                    console.error("Failed to save live sermon", error);
-                    setStatus({ tone: "error", message: "Could not update live sermon." });
-                    setTimeout(() => setStatus(null), 4000);
-                  });
-              }}
+              onClick={() => toggleSection("liveControl")}
+              className="btn-ghost px-3 py-1 text-xs"
             >
-              Save Live Sermon
+              {sectionCollapsed.liveControl ? (
+                <>
+                  <ChevronDown className="h-4 w-4" />
+                  Expand
+                </>
+              ) : (
+                <>
+                  <ChevronUp className="h-4 w-4" />
+                  Collapse
+                </>
+              )}
             </button>
           </div>
-        </div>
+          {!sectionCollapsed.liveControl && (
+            <>
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="text-sm font-semibold text-slate-700">
+                  Title
+                  <input
+                    value={liveSermon.title}
+                    onChange={(e) => setLiveSermon((prev) => ({ ...prev, title: e.target.value }))}
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand-blue focus:outline-none"
+                  />
+                </label>
+                <label className="text-sm font-semibold text-slate-700">
+                  Date
+                  <input
+                    value={liveSermon.date}
+                    onChange={(e) => setLiveSermon((prev) => ({ ...prev, date: e.target.value }))}
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand-blue focus:outline-none"
+                  />
+                </label>
+                <label className="text-sm font-semibold text-slate-700">
+                  Speaker
+                  <input
+                    value={liveSermon.speaker}
+                    onChange={(e) => setLiveSermon((prev) => ({ ...prev, speaker: e.target.value }))}
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand-blue focus:outline-none"
+                  />
+                </label>
+                <label className="text-sm font-semibold text-slate-700">
+                  Video link / embed URL
+                  <input
+                    value={liveSermon.embed}
+                    onChange={(e) => setLiveSermon((prev) => ({ ...prev, embed: e.target.value }))}
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand-blue focus:outline-none"
+                    placeholder="Facebook or YouTube link"
+                  />
+                </label>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => {
+                    if (!liveSermon.embed.trim()) {
+                      setStatus({ tone: "error", message: "Live sermon needs a video link." });
+                      return;
+                    }
 
-        <div className="card mt-6 space-y-4 text-left">
-          <SectionHeader
-            eyebrow="Sermon manager"
-            title="Edit Existing Sermons"
-            subtitle="Edit old sermons and new uploads from one place."
-            alignment="left"
-          />
-          {sermonRecords.length > 0 ? (
-            <div className="grid gap-3 md:grid-cols-2">
-              {sermonRecords.map((sermon) => (
-                <div key={sermon.id} className="rounded-2xl border border-slate-200 bg-white/70 p-4">
-                  <p className="text-sm font-semibold text-brand-navy">{sermon.title}</p>
-                  <p className="text-xs text-slate-600">
-                    {sermon.date} • {sermon.speaker}
-                  </p>
-                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-blue">
-                    {sermon.source === "default" ? "Old sermon" : "Admin sermon"}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      className="btn-ghost"
-                      onClick={() => loadSermonIntoForm(sermon)}
-                    >
-                      {sermon.source === "default" ? "Edit Old Sermon" : "Edit Sermon"}
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-ghost text-red-700 hover:border-red-300 hover:text-red-800"
-                      onClick={() =>
-                        handleManagedDelete(
-                          "sermon",
-                          sermon.id,
-                          sermon.source === "default" ? "Old sermon" : "Sermon"
-                        )
-                      }
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-slate-600">No sermons available right now.</p>
+                    saveFeaturedSermon(liveSermon)
+                      .then(() => refreshItems())
+                      .then(() => {
+                        setStatus({ tone: "success", message: "Live sermon updated." });
+                        setTimeout(() => setStatus(null), 4000);
+                      })
+                      .catch((error) => {
+                        console.error("Failed to save live sermon", error);
+                        setStatus({ tone: "error", message: "Could not update live sermon." });
+                        setTimeout(() => setStatus(null), 4000);
+                      });
+                  }}
+                >
+                  Save Live Sermon
+                </button>
+              </div>
+            </>
           )}
         </div>
 
         <div className="card mt-6 space-y-4 text-left">
-          <SectionHeader
-            eyebrow="Resource manager"
-            title="Delete Resources"
-            subtitle="Remove old or admin-added resources from the website."
-            alignment="left"
-          />
-          {resourceRecords.length > 0 ? (
-            <div className="grid gap-3 md:grid-cols-2">
-              {resourceRecords.map((resource: ResourceRecord) => (
-                <div key={resource.id} className="rounded-2xl border border-slate-200 bg-white/70 p-4">
-                  <p className="text-sm font-semibold text-brand-navy">{resource.title}</p>
-                  <p className="text-xs text-slate-600">{resource.date}</p>
-                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-blue">
-                    {resource.source === "default" ? "Old resource" : "Admin resource"}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <a href={resource.file} target="_blank" rel="noreferrer" className="btn-ghost">
-                      Preview
-                    </a>
-                    <button
-                      type="button"
-                      className="btn-ghost text-red-700 hover:border-red-300 hover:text-red-800"
-                      onClick={() =>
-                        handleManagedDelete(
-                          "resource",
-                          resource.id,
-                          resource.source === "default" ? "Old resource" : "Resource"
-                        )
-                      }
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-slate-600">No resources available right now.</p>
-          )}
-        </div>
-
-        <div className="card mt-6 space-y-4 text-left">
-          <SectionHeader
-            eyebrow="Event manager"
-            title="Edit Existing Event Cards"
-            subtitle="Choose an event to edit details and manage that event's gallery photos."
-            alignment="left"
-          />
-          <div className="space-y-3 rounded-2xl border border-slate-200 bg-white/60 p-4">
-            <p className="text-sm font-semibold text-brand-navy">Edit Upcoming Events</p>
-            {upcomingEventRecords.length > 0 ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <SectionHeader
+              eyebrow="Sermon manager"
+              title="Edit Existing Sermons"
+              subtitle="Edit old sermons and new uploads from one place."
+              alignment="left"
+            />
+            <button
+              type="button"
+              onClick={() => toggleSection("sermons")}
+              className="btn-ghost px-3 py-1 text-xs"
+            >
+              {sectionCollapsed.sermons ? (
+                <>
+                  <ChevronDown className="h-4 w-4" />
+                  Expand
+                </>
+              ) : (
+                <>
+                  <ChevronUp className="h-4 w-4" />
+                  Collapse
+                </>
+              )}
+            </button>
+          </div>
+          {!sectionCollapsed.sermons &&
+            (sermonRecords.length > 0 ? (
               <div className="grid gap-3 md:grid-cols-2">
-                {upcomingEventRecords.map((event) => (
-                  <div key={event.id} className="rounded-xl border border-slate-200 bg-white p-3">
+                {sermonRecords.map((sermon) => (
+                  <div key={sermon.id} className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+                    <p className="text-sm font-semibold text-brand-navy">{sermon.title}</p>
+                    <p className="text-xs text-slate-600">
+                      {sermon.date} • {sermon.speaker}
+                    </p>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-blue">
+                      {sermon.source === "default" ? "Old sermon" : "Admin sermon"}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        className="btn-ghost"
+                        onClick={() => loadSermonIntoForm(sermon)}
+                      >
+                        {sermon.source === "default" ? "Edit Old Sermon" : "Edit Sermon"}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-ghost text-red-700 hover:border-red-300 hover:text-red-800"
+                        onClick={() =>
+                          handleManagedDelete(
+                            "sermon",
+                            sermon.id,
+                            sermon.source === "default" ? "Old sermon" : "Sermon"
+                          )
+                        }
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-600">No sermons available right now.</p>
+            ))}
+        </div>
+
+        <div className="card mt-6 space-y-4 text-left">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <SectionHeader
+              eyebrow="Resource manager"
+              title="Delete Resources"
+              subtitle="Remove old or admin-added resources from the website."
+              alignment="left"
+            />
+            <button
+              type="button"
+              onClick={() => toggleSection("resources")}
+              className="btn-ghost px-3 py-1 text-xs"
+            >
+              {sectionCollapsed.resources ? (
+                <>
+                  <ChevronDown className="h-4 w-4" />
+                  Expand
+                </>
+              ) : (
+                <>
+                  <ChevronUp className="h-4 w-4" />
+                  Collapse
+                </>
+              )}
+            </button>
+          </div>
+          {!sectionCollapsed.resources &&
+            (resourceRecords.length > 0 ? (
+              <div className="grid gap-3 md:grid-cols-2">
+                {resourceRecords.map((resource: ResourceRecord) => (
+                  <div key={resource.id} className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+                    <p className="text-sm font-semibold text-brand-navy">{resource.title}</p>
+                    <p className="text-xs text-slate-600">{resource.date}</p>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-blue">
+                      {resource.source === "default" ? "Old resource" : "Admin resource"}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <a href={resource.file} target="_blank" rel="noreferrer" className="btn-ghost">
+                        Preview
+                      </a>
+                      <button
+                        type="button"
+                        className="btn-ghost text-red-700 hover:border-red-300 hover:text-red-800"
+                        onClick={() =>
+                          handleManagedDelete(
+                            "resource",
+                            resource.id,
+                            resource.source === "default" ? "Old resource" : "Resource"
+                          )
+                        }
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-600">No resources available right now.</p>
+            ))}
+        </div>
+
+        <div className="card mt-6 space-y-4 text-left">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <SectionHeader
+              eyebrow="Event manager"
+              title="Edit Existing Event Cards"
+              subtitle="Choose an event to edit details and manage that event's gallery photos."
+              alignment="left"
+            />
+            <button
+              type="button"
+              onClick={() => toggleSection("events")}
+              className="btn-ghost px-3 py-1 text-xs"
+            >
+              {sectionCollapsed.events ? (
+                <>
+                  <ChevronDown className="h-4 w-4" />
+                  Expand
+                </>
+              ) : (
+                <>
+                  <ChevronUp className="h-4 w-4" />
+                  Collapse
+                </>
+              )}
+            </button>
+          </div>
+          {!sectionCollapsed.events && (
+            <>
+              <div className="space-y-3 rounded-2xl border border-slate-200 bg-white/60 p-4">
+                <p className="text-sm font-semibold text-brand-navy">Edit Upcoming Events</p>
+                {upcomingEventRecords.length > 0 ? (
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {upcomingEventRecords.map((event) => (
+                      <div key={event.id} className="rounded-xl border border-slate-200 bg-white p-3">
+                        <p className="text-sm font-semibold text-brand-navy">{event.name}</p>
+                        <p className="text-xs text-slate-600">
+                          {event.date} • {event.time}
+                        </p>
+                        <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-blue">
+                          {event.gallery.length} photo{event.gallery.length === 1 ? "" : "s"}
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            className="btn-ghost"
+                            onClick={() => loadEventIntoForm(event)}
+                          >
+                            Edit Upcoming Event
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-ghost text-red-700 hover:border-red-300 hover:text-red-800"
+                            onClick={() => handleManagedDelete("event", event.id, "Event")}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-600">
+                    No upcoming events available right now. Edit any card below and set Event section to
+                    Upcoming.
+                  </p>
+                )}
+              </div>
+              <div className="grid gap-3 md:grid-cols-2">
+                {eventRecords.map((event) => (
+                  <div key={event.id} className="rounded-2xl border border-slate-200 bg-white/70 p-4">
                     <p className="text-sm font-semibold text-brand-navy">{event.name}</p>
                     <p className="text-xs text-slate-600">
-                      {event.date} • {event.time}
+                      {event.date} • {event.placement === "past" ? "Past" : "Upcoming"}
                     </p>
                     <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-blue">
                       {event.gallery.length} photo{event.gallery.length === 1 ? "" : "s"}
@@ -1574,7 +1798,7 @@ const AdminPage = () => {
                         className="btn-ghost"
                         onClick={() => loadEventIntoForm(event)}
                       >
-                        Edit Upcoming Event
+                        {event.placement === "upcoming" ? "Edit Upcoming Event" : "Edit Past Event"}
                       </button>
                       <button
                         type="button"
@@ -1588,43 +1812,8 @@ const AdminPage = () => {
                   </div>
                 ))}
               </div>
-            ) : (
-              <p className="text-sm text-slate-600">
-                No upcoming events available right now. Edit any card below and set Event section to
-                Upcoming.
-              </p>
-            )}
-          </div>
-          <div className="grid gap-3 md:grid-cols-2">
-            {eventRecords.map((event) => (
-              <div key={event.id} className="rounded-2xl border border-slate-200 bg-white/70 p-4">
-                <p className="text-sm font-semibold text-brand-navy">{event.name}</p>
-                <p className="text-xs text-slate-600">
-                  {event.date} • {event.placement === "past" ? "Past" : "Upcoming"}
-                </p>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-blue">
-                  {event.gallery.length} photo{event.gallery.length === 1 ? "" : "s"}
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    className="btn-ghost"
-                    onClick={() => loadEventIntoForm(event)}
-                  >
-                    {event.placement === "upcoming" ? "Edit Upcoming Event" : "Edit Past Event"}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-ghost text-red-700 hover:border-red-300 hover:text-red-800"
-                    onClick={() => handleManagedDelete("event", event.id, "Event")}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+            </>
+          )}
         </div>
       </section>
     </div>
