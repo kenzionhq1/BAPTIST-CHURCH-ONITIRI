@@ -52,6 +52,7 @@ type UploadForm = {
   galleryFiles: File[];
   existingGalleryImages: string[];
   position: "top" | "bottom";
+  originalOrder?: number;
 };
 
 type StatusMessage = {
@@ -120,7 +121,8 @@ const AdminPage = () => {
     galleryLinksText: "",
     galleryFiles: [],
     existingGalleryImages: [],
-    position: "bottom"
+    position: "bottom",
+    originalOrder: undefined
   });
   const [adminView, setAdminView] = useState<AdminView | null>(null);
   const [historyEntries, setHistoryEntries] = useState<AdminHistoryEntry[]>([]);
@@ -457,7 +459,8 @@ const AdminPage = () => {
       galleryLinksText: "",
       galleryFiles: [],
       existingGalleryImages: [],
-      position: "bottom"
+      position: "bottom",
+      originalOrder: undefined
     });
     setEventEditingId(null);
     setSermonEditingId(null);
@@ -603,6 +606,16 @@ const AdminPage = () => {
 
       const editId = isEvent ? eventEditingId : isSermon ? sermonEditingId : null;
       if (editId) {
+        // When editing, calculate order if position changed or user explicitly chose a position
+        // If position is "top", calculate new order for top
+        // If position is "bottom", preserve original order (don't move)
+        if (form.position === "top" && form.originalOrder !== undefined) {
+          const newOrder = calculateOrderForPosition(category, "top");
+          (payload as any).order = newOrder;
+        } else if (form.position === "bottom" && form.originalOrder !== undefined) {
+          // Preserve original position by using original order
+          (payload as any).order = form.originalOrder;
+        }
         await updateAdminItem(editId, payload);
       } else {
         // Include position for new items
@@ -633,6 +646,25 @@ const AdminPage = () => {
     }
   };
 
+  const calculateOrderForPosition = (category: AdminCategory, position: "top" | "bottom"): number => {
+    // Get all items in this category from adminView
+    const categoryItems = adminView?.itemsByCategory[category] || [];
+
+    if (categoryItems.length === 0) {
+      return 0;
+    }
+
+    const orders = categoryItems.map((item) => item.order || 0);
+    const maxOrder = Math.max(...orders);
+    const minOrder = Math.min(...orders);
+
+    if (position === "top") {
+      return maxOrder + 1;
+    } else {
+      return minOrder - 1;
+    }
+  };
+
   const loadEventIntoForm = (event: EventRecord) => {
     const coverFallback = "/event.jpg";
     const coverLink =
@@ -659,7 +691,9 @@ const AdminPage = () => {
       file: null,
       galleryLinksText: "",
       galleryFiles: [],
-      existingGalleryImages
+      existingGalleryImages,
+      position: "bottom",
+      originalOrder: adminView?.itemsByCategory.event.find((e) => e.id === event.id)?.order
     }));
     setStatus({
       tone: "success",
@@ -690,7 +724,9 @@ const AdminPage = () => {
       file: null,
       galleryLinksText: "",
       galleryFiles: [],
-      existingGalleryImages: []
+      existingGalleryImages: [],
+      position: "bottom",
+      originalOrder: adminView?.itemsByCategory.sermon.find((s) => s.id === sermon.id)?.order
     }));
     setStatus({
       tone: "success",
