@@ -49,6 +49,37 @@ const EventsPage = () => {
   } | null>(null);
   const [openGalleryEvents, setOpenGalleryEvents] = useState<string[]>([]);
 
+  const parseEventDateTime = (dateStr: string, timeStr: string): Date => {
+    // Try to parse the date string first
+    const eventDate = new Date(dateStr);
+    if (isNaN(eventDate.getTime())) {
+      return new Date(); // Fallback
+    }
+
+    // If time is provided, parse and set it
+    if (timeStr && timeStr.trim()) {
+      const timeRegex = /(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)/;
+      const match = timeStr.match(timeRegex);
+      if (match) {
+        let [, hoursStr, minutesStr, period] = match;
+        let hours = parseInt(hoursStr, 10);
+        const minutes = parseInt(minutesStr, 10);
+        const isPM = period.toUpperCase() === "PM";
+
+        // Convert 12-hour to 24-hour format
+        if (isPM && hours !== 12) {
+          hours += 12;
+        } else if (!isPM && hours === 12) {
+          hours = 0;
+        }
+
+        eventDate.setHours(hours, minutes, 0, 0);
+      }
+    }
+
+    return eventDate;
+  };
+
   useEffect(() => {
     let isMounted = true;
     fetchPublicEvents()
@@ -64,7 +95,8 @@ const EventsPage = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       const next = upcomingEvents.reduce<Record<string, string>>((acc, event) => {
-        const diff = new Date(event.date).getTime() - Date.now();
+        const eventDateTime = parseEventDateTime(event.date, event.time);
+        const diff = eventDateTime.getTime() - Date.now();
         if (diff <= 0) {
           acc[event.id] = "Event started!";
         } else {
