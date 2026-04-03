@@ -1,94 +1,131 @@
-class Sermon {
-  final String id;
+class ChurchData {
+  final FeaturedSermon? featuredSermon;
+  final List<Sermon> sermons;
+  final List<Event> events;
+  final List<Resource> resources;
+
+  ChurchData({
+    required this.featuredSermon,
+    required this.sermons,
+    required this.events,
+    required this.resources,
+  });
+
+  factory ChurchData.fromJson(Map<String, dynamic> json) {
+    return ChurchData(
+      featuredSermon: json['featuredSermon'] != null
+          ? FeaturedSermon.fromJson(json['featuredSermon'])
+          : null,
+      sermons: (json['itemsByCategory']?['sermon'] as List?)
+              ?.map((e) => Sermon.fromJson(e))
+              .toList() ??
+          [],
+      events: (json['itemsByCategory']?['event'] as List?)
+              ?.map((e) => Event.fromJson(e))
+              .toList() ??
+          [],
+      resources: (json['itemsByCategory']?['resource'] as List?)
+              ?.map((e) => Resource.fromJson(e))
+              .toList() ??
+          [],
+    );
+  }
+}
+
+class FeaturedSermon {
   final String title;
   final String date;
   final String speaker;
-  final String link;
-  final String image;
+  final String embed;
 
-  Sermon({
-    required this.id,
+  FeaturedSermon({
     required this.title,
     required this.date,
     required this.speaker,
+    required this.embed,
+  });
+
+  factory FeaturedSermon.fromJson(Map<String, dynamic> json) {
+    return FeaturedSermon(
+      title: json['title'] ?? '',
+      date: json['date'] ?? '',
+      speaker: json['speaker'] ?? '',
+      embed: json['embed'] ?? '',
+    );
+  }
+}
+
+class Sermon {
+  final String title;
+  final String date;
+  final String speaker;
+  final String category;
+  final String link;
+
+  Sermon({
+    required this.title,
+    required this.date,
+    required this.speaker,
+    required this.category,
     required this.link,
-    required this.image,
   });
 
   factory Sermon.fromJson(Map<String, dynamic> json) {
     return Sermon(
-      id: json['id'] ?? '',
       title: json['title'] ?? 'Untitled Sermon',
       date: json['date'] ?? '',
-      speaker: json['speaker'] ?? 'Unknown Speaker',
+      speaker: json['speaker'] ?? 'Unknown',
+      category: json['category'] ?? '',
       link: json['link'] ?? '',
-      image: json['image'] ?? '',
     );
   }
 }
 
 class Event {
-  final String id;
   final String name;
   final String date;
   final String time;
   final String summary;
-  final String cover;
   final String placement;
+  final String link;
 
   Event({
-    required this.id,
     required this.name,
     required this.date,
     required this.time,
     required this.summary,
-    required this.cover,
     required this.placement,
+    required this.link,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
     return Event(
-      id: json['id'] ?? '',
-      name: json['name'] ?? 'Untitled Event',
+      name: json['title'] ?? 'Untitled Event',
       date: json['date'] ?? '',
-      time: json['time'] ?? '',
+      time: json['eventTime'] ?? '',
       summary: json['summary'] ?? '',
-      cover: json['cover'] ?? '',
-      placement: json['placement'] ?? 'upcoming',
+      placement: json['eventPlacement'] ?? 'upcoming',
+      link: json['link'] ?? '',
     );
   }
 }
 
-class ChurchData {
-  final List<Sermon> sermons;
-  final List<Event> upcomingEvents;
-  final List<Event> pastEvents;
+class Resource {
+  final String title;
+  final String date;
+  final String file;
 
-  ChurchData({
-    required this.sermons,
-    required this.upcomingEvents,
-    required this.pastEvents,
+  Resource({
+    required this.title,
+    required this.date,
+    required this.file,
   });
 
-  factory ChurchData.fromJson(Map<String, dynamic> json) {
-    final itemsByCategory = json['itemsByCategory'] ?? {};
-    final sermonsList = (itemsByCategory['sermon'] as List<dynamic>?)
-            ?.map((e) => Sermon.fromJson(e as Map<String, dynamic>))
-            .toList() ??
-        [];
-
-    final allEvents = (itemsByCategory['event'] as List<dynamic>?)
-            ?.map((e) => Event.fromJson(e as Map<String, dynamic>))
-            .toList() ??
-        [];
-
-    final upcomingEvents =allEvents.where((e) => e.placement == 'upcoming').toList();
-    final pastEvents = allEvents.where((e) => e.placement == 'past').toList();
-
-    return ChurchData(
-      sermons: sermonsList,
-      upcomingEvents: upcomingEvents,
-      pastEvents: pastEvents,
+  factory Resource.fromJson(Map<String, dynamic> json) {
+    return Resource(
+      title: json['title'] ?? 'Untitled Resource',
+      date: json['date'] ?? '',
+      file: json['fileUrl'] ?? json['file'] ?? '',
     );
   }
 }
