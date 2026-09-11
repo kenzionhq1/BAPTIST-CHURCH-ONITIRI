@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +6,8 @@
 
 @layer base {
   body {
-    @apply font-body bg-slate-50 text-slate-900 antialiased;
+    @apply font-body bg-[#F8FAFC] text-slate-900 antialiased selection:bg-brand-gold/30 selection:text-brand-navy;
+    -webkit-tap-highlight-color: transparent;
   }
 
   h1,
@@ -15,28 +16,47 @@
   h4,
   h5,
   h6 {
-    @apply font-display text-slate-900;
-  }
-
-  ::selection {
-    @apply bg-brand-gold/60 text-brand-navy;
+    @apply font-display text-brand-navy tracking-tight;
   }
 }
 
 @layer components {
-  .glass {
-    @apply bg-white/70 backdrop-blur-xl border border-white/60 shadow-glass;
+  /* Figma-like Glass & Card Foundations */
+  .glass-header {
+    @apply bg-[#09172A]/85 backdrop-blur-xl border-b border-white/10 shadow-sm;
   }
 
-  .card {
-    @apply glass rounded-2xl p-6 shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-xl;
+  .glass-card {
+    @apply bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-figma rounded-2xl transition-all duration-200;
   }
 
+  .card-figma {
+    @apply bg-white border border-slate-200/90 rounded-2xl p-5 shadow-figma transition-all duration-200 hover:-translate-y-0.5 hover:shadow-figma-hover hover:border-slate-300;
+  }
+
+  /* Buttons & Touch Target Rules */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-blue via-brand-sky to-brand-gold px-5 py-2.5 text-sm font-semibold text-slate-900 shadow-lg shadow-brand-blue/10 transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold;
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-brand-blue px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand-blue/20 transition-all duration-200 hover:bg-blue-600 hover:shadow-lg active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue touch-manipulation;
+  }
+
+  .btn-navy {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-brand-navy px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand-navy/20 transition-all duration-200 hover:bg-brand-navy-light active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy touch-manipulation;
+  }
+
+  .btn-amber {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-amber-500 px-6 py-2.5 text-sm font-semibold text-slate-950 shadow-md shadow-amber-500/20 transition-all duration-200 hover:bg-amber-400 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 touch-manipulation;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-brand-indigo transition hover:border-brand-blue hover:text-brand-blue focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue;
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-slate-200 bg-white/80 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-all duration-200 hover:border-slate-300 hover:bg-slate-100 hover:text-brand-navy active:scale-[0.98] touch-manipulation;
+  }
+
+  /* Horizontal Scrollbar Hiding */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

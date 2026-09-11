@@ -1,5 +1,5 @@
-import { Link, NavLink } from "react-router-dom";
-import { Facebook, Instagram, Mail, Phone, Youtube, Home, Video, Calendar, Heart } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Facebook, Instagram, Mail, Phone, Youtube, MapPin } from "lucide-react";
 
 const quickLinks = [
   { label: "About", to: "/about" },
@@ -13,218 +13,133 @@ const quickLinks = [
 
 const Footer = () => {
   return (
-    <footer className="mt-16 bg-gradient-to-b from-brand-navy via-[#0A234F] to-[#081a3d] text-slate-100 relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none opacity-25" style={{backgroundImage:"radial-gradient(circle at 20% 20%, rgba(255,255,255,0.12), transparent 30%), radial-gradient(circle at 80% 10%, rgba(250,204,21,0.18), transparent 25%)"}} />
-      <div className="section-shell gap-10 relative">
-        <div className="hidden md:grid gap-10 md:grid-cols-3 items-start">
-          <div className="flex flex-col gap-4">
+    <footer className="bg-[#09172A] text-slate-200 relative overflow-hidden border-t border-white/10 pt-12 pb-24 md:pb-12">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 items-start">
+          
+          {/* Church Info */}
+          <div className="space-y-4 sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3">
-              <img
-                src="/Unknown-removebg-preview.png"
-                alt="Baptist Church Onitiri, Yaba logo"
-                className="h-16 w-20 object-contain drop-shadow-sm md:h-18 md:w-22"
-                loading="lazy"
-                onError={(event) => {
-                  const target = event.currentTarget;
-                  if (target.dataset.fallbackApplied) {
-                    return;
-                  }
-                  target.dataset.fallbackApplied = "true";
-                  target.src = "/HERO.jpg";
-                }}
-              />
-              <div>
-                <p className="text-xs uppercase tracking-[0.12em] text-brand-gold">Baptist Church</p>
-                <p className="text-lg font-semibold">Onitiri, Yaba</p>
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 p-1 backdrop-blur-md">
+                <img
+                  src="/Unknown-removebg-preview.png"
+                  alt="Baptist Church Onitiri logo"
+                  className="h-10 w-10 object-contain drop-shadow"
+                  loading="lazy"
+                  onError={(event) => {
+                    const target = event.currentTarget;
+                    if (target.dataset.fallbackApplied) return;
+                    target.dataset.fallbackApplied = "true";
+                    target.src = "/HERO.jpg";
+                  }}
+                />
+              </div>
+              <div className="leading-tight">
+                <p className="text-[10px] uppercase font-bold tracking-[0.14em] text-amber-400">Baptist Church</p>
+                <p className="text-base font-extrabold text-white">Onitiri, Yaba</p>
               </div>
             </div>
-            <p className="text-sm text-slate-200/80">
-              Serving God. Loving People. Changing Lives.
+            <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+              Loving God, building people, and impacting our community across Yaba and Lagos.
             </p>
-            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-200/80">
-              <Mail className="h-4 w-4" />
-              <a className="hover:text-brand-gold" href="mailto:info@bconitiri.org">
-                info@bconitiri.org
-              </a>
-              <Phone className="h-4 w-4" />
-              <a className="hover:text-brand-gold" href="tel:+2348034763402">
-                +234 803 476 3402
-              </a>
+            <div className="space-y-1.5 text-xs text-slate-300">
+              <p className="flex items-center gap-2">
+                <Mail className="h-3.5 w-3.5 text-sky-400" />
+                <a href="mailto:info@bconitiri.org" className="hover:text-amber-400 transition">info@bconitiri.org</a>
+              </p>
+              <p className="flex items-center gap-2">
+                <Phone className="h-3.5 w-3.5 text-emerald-400" />
+                <a href="tel:+2348034763402" className="hover:text-amber-400 transition">+234 803 476 3402</a>
+              </p>
             </div>
-            <a
-              className="text-sm text-brand-gold hover:underline"
-              target="_blank"
-              rel="noreferrer"
-              href="https://www.google.com/maps/place/14+Lawani+St,+Onike,+Lagos+101245,+Lagos"
-            >
-              14 Lawani St, Onike, Lagos 101245, Lagos
-            </a>
           </div>
 
+          {/* Quick Navigation */}
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-gold">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 mb-3">
               Quick Links
             </h4>
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              {quickLinks.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className="rounded-lg px-2 py-2 text-sm text-slate-100/90 transition hover:bg-white/10 hover:text-white"
-                >
-                  {item.label}
-                </Link>
+            <ul className="space-y-2 text-xs font-medium">
+              {quickLinks.slice(0, 4).map((item) => (
+                <li key={item.to}>
+                  <Link to={item.to} className="text-slate-300 hover:text-white transition">
+                    {item.label}
+                  </Link>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
 
-          <div className="flex flex-col gap-3">
-            <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-gold">
-              Connect
+          {/* Ministries & Care */}
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 mb-3">
+              Ministries
             </h4>
-            <div className="flex items-center gap-3">
+            <ul className="space-y-2 text-xs font-medium">
+              {quickLinks.slice(4).map((item) => (
+                <li key={item.to}>
+                  <Link to={item.to} className="text-slate-300 hover:text-white transition">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Socials & Location */}
+          <div className="space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400">
+              Connect & Gather
+            </h4>
+            <a
+              href="https://www.google.com/maps/place/14+Lawani+St,+Onike,+Lagos+101245,+Lagos"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-start gap-2 text-xs text-slate-300 hover:text-amber-400 transition"
+            >
+              <MapPin className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+              <span>14 Lawani Street, Onike, Yaba, Lagos</span>
+            </a>
+
+            <div className="flex items-center gap-2 pt-1">
               <a
                 href="https://facebook.com/bconitiri"
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full bg-white/10 p-2 text-white transition hover:bg-brand-gold hover:text-brand-navy"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-amber-400 hover:text-slate-950 transition"
               >
-                <Facebook className="h-5 w-5" />
+                <Facebook className="h-4 w-4" />
               </a>
               <a
                 href="https://youtube.com/@bconitiri"
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full bg-white/10 p-2 text-white transition hover:bg-brand-gold hover:text-brand-navy"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-amber-400 hover:text-slate-950 transition"
               >
-                <Youtube className="h-5 w-5" />
+                <Youtube className="h-4 w-4" />
               </a>
               <a
                 href="https://instagram.com/bconitiri"
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full bg-white/10 p-2 text-white transition hover:bg-brand-gold hover:text-brand-navy"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-amber-400 hover:text-slate-950 transition"
               >
-                <Instagram className="h-5 w-5" />
+                <Instagram className="h-4 w-4" />
               </a>
             </div>
-            <div className="flex flex-wrap gap-2 text-sm text-slate-200/80">
-              <Link to="/privacy-policy" className="hover:text-brand-gold">
-                Privacy Policy
-              </Link>
-              <span aria-hidden="true">•</span>
-              <Link to="/terms" className="hover:text-brand-gold">
-                Terms
-              </Link>
-              <span aria-hidden="true">•</span>
-              <Link to="/cookies" className="hover:text-brand-gold">
-                Cookies
-              </Link>
-            </div>
-            <p className="text-xs text-slate-400">
-              © {new Date().getFullYear()} Baptist Church Onitiri, Yaba. All rights reserved.
-            </p>
           </div>
+
         </div>
 
-        {/* Mobile compact footer */}
-        <div className="md:hidden flex flex-col gap-4 text-sm text-slate-100 pb-20">
-          <div className="flex items-center gap-3">
-            <img
-              src="/Unknown-removebg-preview.png"
-              alt="Baptist Church Onitiri, Yaba logo"
-              className="h-16 w-20 object-contain drop-shadow-sm"
-              loading="lazy"
-              onError={(event) => {
-                const target = event.currentTarget;
-                if (target.dataset.fallbackApplied) {
-                  return;
-                }
-                target.dataset.fallbackApplied = "true";
-                target.src = "/HERO.jpg";
-              }}
-            />
-            <div className="leading-tight">
-              <p className="text-xs uppercase tracking-[0.12em] text-brand-gold">Baptist Church</p>
-              <p className="text-base font-semibold">Onitiri, Yaba</p>
-            </div>
+        {/* Bottom Bar */}
+        <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400">
+          <p>© {new Date().getFullYear()} Baptist Church Onitiri, Yaba. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <Link to="/privacy-policy" className="hover:text-slate-200">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-slate-200">Terms of Service</Link>
+            <Link to="/cookies" className="hover:text-slate-200">Cookies</Link>
           </div>
-          <a
-            className="text-sm text-brand-gold hover:underline"
-            target="_blank"
-            rel="noreferrer"
-            href="https://www.google.com/maps/place/14+Lawani+St,+Onike,+Lagos+101245,+Lagos"
-          >
-            14 Lawani St, Onike, Lagos 101245, Lagos
-          </a>
-          <div className="flex flex-wrap gap-3 text-xs text-slate-200/90">
-            <Link to="/privacy-policy" className="hover:text-brand-gold">
-              Privacy
-            </Link>
-            <span aria-hidden="true">•</span>
-            <Link to="/terms" className="hover:text-brand-gold">
-              Terms
-            </Link>
-            <span aria-hidden="true">•</span>
-            <Link to="/cookies" className="hover:text-brand-gold">
-              Cookies
-            </Link>
-          </div>
-          <p className="text-xs text-slate-400">
-            © {new Date().getFullYear()} Baptist Church Onitiri, Yaba. All rights reserved.
-          </p>
         </div>
-      </div>
-
-      {/* Mobile sticky bottom nav */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-brand-navy/95 backdrop-blur-md border-t border-white/20">
-        <nav className="grid grid-cols-5 gap-2 p-3 h-16 items-center text-white">
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              `flex flex-col items-center gap-1 text-xs group ${isActive ? "text-brand-gold" : ""}`
-            }
-          >
-            <Home className="w-6 h-6 opacity-80 group-hover:opacity-100" />
-            <span>Home</span>
-          </NavLink>
-          <NavLink
-            to="/sermons"
-            className={({ isActive }) =>
-              `flex flex-col items-center gap-1 text-xs group ${isActive ? "text-brand-gold" : ""}`
-            }
-          >
-            <Video className="w-6 h-6 opacity-80 group-hover:opacity-100" />
-            <span>Sermons</span>
-          </NavLink>
-          <NavLink
-            to="/events"
-            className={({ isActive }) =>
-              `flex flex-col items-center gap-1 text-xs group ${isActive ? "text-brand-gold" : ""}`
-            }
-          >
-            <Calendar className="w-6 h-6 opacity-80 group-hover:opacity-100" />
-            <span>Events</span>
-          </NavLink>
-          <NavLink
-            to="/giving"
-            className={({ isActive }) =>
-              `flex flex-col items-center gap-1 text-xs group ${isActive ? "text-brand-gold" : ""}`
-            }
-          >
-            <Heart className="w-6 h-6 opacity-80 group-hover:opacity-100" />
-            <span>Give</span>
-          </NavLink>
-          <NavLink
-            to="/contact"
-            className={({ isActive }) =>
-              `flex flex-col items-center gap-1 text-xs group ${isActive ? "text-brand-gold" : ""}`
-            }
-          >
-            <Phone className="w-6 h-6 opacity-80 group-hover:opacity-100" />
-            <span>Contact</span>
-          </NavLink>
-        </nav>
       </div>
     </footer>
   );

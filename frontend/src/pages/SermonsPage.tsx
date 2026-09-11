@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import SectionHeader from "../components/common/SectionHeader";
 import Hero from "../components/Hero";
 import clsx from "clsx";
 import {
@@ -8,6 +7,7 @@ import {
   toPublicVideoUrl
 } from "../utils/adminContent";
 import { fetchPublicSermons, type FeaturedSermon, type PublicSermon } from "../utils/backend";
+import { Play, X, Search, Filter, ExternalLink, Calendar, User, Tv } from "lucide-react";
 
 const SermonsPage = () => {
   const [allSermons, setAllSermons] = useState<PublicSermon[]>([]);
@@ -17,14 +17,25 @@ const SermonsPage = () => {
     speaker: "",
     embed: ""
   });
-  const previewCount = 3;
+  const previewCount = 6;
   const featuredEmbed = useMemo(() => toEmbedVideoUrl(featuredSermon.embed || ""), [featuredSermon.embed]);
   const categories = useMemo(() => ["all", ...new Set(allSermons.map((s) => s.category))], [allSermons]);
+  
   const [filter, setFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [activeId, setActiveId] = useState<string | null>(null);
   const [showAllSermons, setShowAllSermons] = useState(false);
 
-  const filtered = filter === "all" ? allSermons : allSermons.filter((s) => s.category === filter);
+  const filtered = useMemo(() => {
+    return allSermons.filter((s) => {
+      const matchesCategory = filter === "all" || s.category === filter;
+      const matchesSearch =
+        s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.speaker.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [allSermons, filter, searchQuery]);
+
   const visibleSermons = showAllSermons ? filtered : filtered.slice(0, previewCount);
 
   const openModal = (id: string) => setActiveId(id);
@@ -52,64 +63,90 @@ const SermonsPage = () => {
   }, []);
 
   return (
-    <div className="space-y-16">
+    <div className="space-y-12 sm:space-y-16 pb-16">
       <Hero
-        title="Sermons"
-        highlight="Experience the Word"
-        subtitle="Experience the power of God's word. Catch the latest message or browse the archive."
-        image="/sermon-hero.jpeg"
+        title="Sermon Archive"
+        highlight="Inspired by God's Word"
+        subtitle="Listen to life-transforming messages from our pastoral team. Grow in faith, wisdom, and spiritual depth."
+        image="/HERO.jpg"
       />
 
-      <section className="section-shell">
-        <SectionHeader
-          eyebrow={
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
-              <span className="font-semibold text-brand-blue">LIVE NOW</span>
+      {/* Featured / Live Sermon Highlight */}
+      <section className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="rounded-3xl bg-[#09172A] p-6 sm:p-8 shadow-2xl text-white">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="relative flex h-3 w-3">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500" />
+            </span>
+            <span className="text-xs font-bold uppercase tracking-wider text-red-400">Featured Sermon / Stream</span>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:items-center">
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-950 aspect-video shadow-lg">
+              {featuredEmbed ? (
+                <iframe
+                  src={featuredEmbed}
+                  className="h-full w-full border-0"
+                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                  allowFullScreen
+                  title={featuredSermon.title || "Featured Sermon"}
+                />
+              ) : (
+                <div className="flex h-full w-full flex-col items-center justify-center p-6 text-center text-slate-400">
+                  <Tv className="h-10 w-10 text-amber-400 mb-2" />
+                  <p className="text-sm font-semibold text-slate-200">Featured message stream unavailable</p>
+                </div>
+              )}
             </div>
-          }
-          title="Live Sermon"
-          subtitle={`${featuredSermon.title} — ${featuredSermon.date} | ${featuredSermon.speaker}`}
-          action={
-            <a
-              href={toPublicVideoUrl(featuredSermon.embed)}
-              target="_blank"
-              rel="noreferrer"
-              className="btn-primary"
-            >
-              Watch on Facebook
-            </a>
-          }
-        />
-        <div
-          className="group cursor-pointer"
-          onClick={() => window.open(toPublicVideoUrl(featuredSermon.embed), "_blank")}
-        >
-          <div className="overflow-hidden rounded-2xl shadow-xl ring-1 ring-slate-200 group-hover:scale-[1.02] transition-all duration-200">
-            {featuredEmbed ? (
-              <iframe
-                src={featuredEmbed}
-                className="h-[380px] w-full md:h-[460px]"
-                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                allowFullScreen
-                title={featuredSermon.title}
-              />
-            ) : (
-              <div className="flex h-[380px] w-full items-center justify-center bg-slate-100 px-4 text-center text-sm text-slate-600 md:h-[460px]">
-                No live sermon video has been configured yet.
+
+            <div className="space-y-4">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
+                {featuredSermon.title || "Sunday Message"}
+              </h2>
+              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300">
+                <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5 text-amber-400" /> {featuredSermon.date}</span>
+                <span>•</span>
+                <span className="flex items-center gap-1"><User className="h-3.5 w-3.5 text-sky-400" /> {featuredSermon.speaker}</span>
               </div>
-            )}
+              <div className="pt-2">
+                <a
+                  href={toPublicVideoUrl(featuredSermon.embed)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-amber text-xs font-bold py-3 inline-flex items-center gap-2"
+                >
+                  Watch on Facebook <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="section-shell">
-        <SectionHeader
-          eyebrow="Archive"
-          title="Past Sermons"
-          subtitle="Filter by theme and catch up on any service you missed."
-        />
-        <div className="flex flex-wrap gap-2">
+      {/* Sermon Catalog & Search */}
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-6">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-brand-blue">Catalog</span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-brand-navy">Explore All Messages</h2>
+          </div>
+
+          {/* Search Input Bar */}
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search by title or speaker..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-full border border-slate-200 bg-white py-2 pl-10 pr-4 text-xs font-medium text-slate-900 shadow-sm focus:border-brand-blue focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Horizontal Mobile Category Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
           {categories.map((category) => (
             <button
               key={category}
@@ -118,116 +155,143 @@ const SermonsPage = () => {
                 setShowAllSermons(false);
               }}
               className={clsx(
-                "rounded-full px-4 py-2 text-sm font-semibold transition",
+                "whitespace-nowrap rounded-full px-4 py-2 text-xs font-bold transition-all duration-150 active:scale-95",
                 filter === category
-                  ? "bg-brand-blue text-white shadow"
-                  : "border border-slate-200 bg-white text-slate-700 hover:border-brand-blue"
+                  ? "bg-brand-blue text-white shadow-md shadow-brand-blue/20"
+                  : "border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
               )}
             >
-              {category === "all" ? "All" : category.charAt(0).toUpperCase() + category.slice(1)}
+              {category === "all" ? "All Categories" : category.toUpperCase()}
             </button>
           ))}
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {visibleSermons.map((sermon) => (
-            <div key={sermon.id} className="card h-full text-left">
-              <div className="overflow-hidden rounded-xl">
-                <img
-                  src={sermon.image}
-                  alt={sermon.title}
-                  className="h-44 w-full object-cover transition duration-300 hover:scale-105"
-                  loading="lazy"
-                  onError={(event) => {
-                    const target = event.currentTarget;
-                    if (target.dataset.fallbackApplied) {
-                      return;
-                    }
-                    target.dataset.fallbackApplied = "true";
-                    target.src = "/sermon-hero.jpeg";
-                  }}
-                />
+        {/* Sermons Grid Cards */}
+        {visibleSermons.length > 0 ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {visibleSermons.map((sermon) => (
+              <div
+                key={sermon.id}
+                className="card-figma flex flex-col justify-between group overflow-hidden"
+              >
+                <div>
+                  {/* Thumbnail Container */}
+                  <div className="relative aspect-video overflow-hidden rounded-xl bg-slate-900">
+                    <img
+                      src={sermon.image}
+                      alt={sermon.title}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
+                      onError={(event) => {
+                        const target = event.currentTarget;
+                        if (target.dataset.fallbackApplied) return;
+                        target.dataset.fallbackApplied = "true";
+                        target.src = "/HERO.jpg";
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-slate-950/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-brand-navy shadow-lg">
+                        <Play className="h-5 w-5 fill-current ml-0.5" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 space-y-1.5">
+                    <span className="inline-block rounded-md bg-brand-navy/5 px-2.5 py-0.5 text-[10px] font-bold text-brand-blue uppercase">
+                      {sermon.category || "Sermon"}
+                    </span>
+                    <h3 className="text-lg font-bold text-brand-navy group-hover:text-brand-blue transition-colors line-clamp-2">
+                      {sermon.title}
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      {sermon.date} • {sermon.speaker}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-5 pt-3 border-t border-slate-100">
+                  <button
+                    disabled={!sermon.link}
+                    onClick={() => openModal(sermon.id)}
+                    className={clsx(
+                      "w-full btn-primary text-xs py-2.5 font-bold justify-center",
+                      !sermon.link && "opacity-50 cursor-not-allowed"
+                    )}
+                  >
+                    <Play className="h-3.5 w-3.5 fill-current" /> {sermon.link ? "Watch Video" : "Link Unavailable"}
+                  </button>
+                </div>
               </div>
-              <div className="mt-3 space-y-1">
-                <h3 className="text-lg font-semibold text-brand-navy">{sermon.title}</h3>
-                <p className="text-sm text-slate-600">
-                  {sermon.date} | {sermon.speaker}
-                </p>
-                <button
-                  disabled={!sermon.link}
-                  onClick={() => openModal(sermon.id)}
-                  className={clsx(
-                    "mt-2 inline-flex w-full justify-center",
-                    sermon.link ? "btn-primary" : "btn-ghost cursor-not-allowed opacity-60"
-                  )}
-                >
-                  {sermon.link ? "Watch" : "Link missing"}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center text-sm text-slate-500">
+            No sermons found matching your filter criteria.
+          </div>
+        )}
+
         {filtered.length > previewCount && (
-          <div className="mt-6 flex justify-center">
+          <div className="mt-8 flex justify-center">
             <button
               type="button"
               onClick={() => setShowAllSermons((prev) => !prev)}
-              className="btn-ghost"
+              className="btn-navy text-xs font-bold py-3 px-8"
             >
-              {showAllSermons ? "Show Less" : "See More Sermons"}
+              {showAllSermons ? "Show Fewer Sermons" : `View All ${filtered.length} Sermons`}
             </button>
           </div>
         )}
       </section>
 
+      {/* Video Player Modal */}
       {activeSermon && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 backdrop-blur">
-          <div className="glass relative w-full max-w-5xl rounded-3xl border border-slate-200 p-6 shadow-2xl">
-            <button
-              onClick={closeModal}
-              className="absolute right-4 top-4 rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-semibold text-slate-700 hover:text-brand-blue"
-            >
-              Close
-            </button>
-            <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-              <div className="overflow-hidden rounded-2xl shadow-lg ring-1 ring-slate-200">
-                {activeSermon.link ? (
-                  <iframe
-                    key={activeSermon.id}
-                    src={appendAutoplayToEmbedUrl(toEmbedVideoUrl(activeSermon.link))}
-                    className="h-[320px] w-full md:h-[420px]"
-                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                    allowFullScreen
-                    title={activeSermon.title}
-                  />
-                ) : (
-                  <div className="flex h-[320px] w-full items-center justify-center bg-slate-100 px-6 text-center text-sm text-slate-600 md:h-[420px]">
-                    This sermon does not have a playback link yet.
-                  </div>
-                )}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={closeModal} />
+          
+          <div className="relative z-10 w-full max-w-4xl rounded-3xl bg-slate-900 border border-white/10 p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Sermon Player</span>
+                <h3 className="text-xl font-bold text-white leading-tight">{activeSermon.title}</h3>
+                <p className="text-xs text-slate-400">{activeSermon.date} • {activeSermon.speaker}</p>
               </div>
-              <div className="space-y-4 text-left">
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-blue">Now watching</p>
-                  <h3 className="text-2xl font-bold text-brand-navy">{activeSermon.title}</h3>
-                  <p className="text-sm text-slate-600">
-                    {activeSermon.date} • {activeSermon.speaker}
-                  </p>
+              <button
+                onClick={closeModal}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="relative aspect-video overflow-hidden rounded-2xl bg-black">
+              {activeSermon.link ? (
+                <iframe
+                  key={activeSermon.id}
+                  src={appendAutoplayToEmbedUrl(toEmbedVideoUrl(activeSermon.link))}
+                  className="h-full w-full border-0"
+                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                  allowFullScreen
+                  title={activeSermon.title}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-slate-400 text-sm">
+                  Playback link missing for this sermon.
                 </div>
-                <div className="flex gap-2">
-                  <a
-                    href={toPublicVideoUrl(activeSermon.link)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn-ghost"
-                  >
-                    Open in new tab
-                  </a>
-                  <button onClick={closeModal} className="btn-primary">
-                    Continue browsing
-                  </button>
-                </div>
-              </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <a
+                href={toPublicVideoUrl(activeSermon.link)}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-ghost text-xs border-white/20 text-white hover:bg-white/10"
+              >
+                Open Original Link <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+              <button onClick={closeModal} className="btn-amber text-xs font-bold">
+                Close Player
+              </button>
             </div>
           </div>
         </div>
