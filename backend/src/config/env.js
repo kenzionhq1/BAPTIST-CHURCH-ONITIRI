@@ -28,6 +28,8 @@ const env = {
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || "",
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || "",
   CLOUDINARY_FOLDER: process.env.CLOUDINARY_FOLDER || "baptist-church-onitiri",
+  SUPABASE_URL: process.env.SUPABASE_URL || "",
+  SUPABASE_KEY: process.env.SUPABASE_KEY || "",
 };
 
 module.exports = { env };

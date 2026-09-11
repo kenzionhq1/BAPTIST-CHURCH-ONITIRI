@@ -1,31 +1,29 @@
 const { getDefaultData } = require("../defaults/loadDefaults");
-const { AdminItem, FeaturedSermon, HiddenEntity } = require("../models");
+const { supabase } = require("../config/supabase");
 
-function normalizeDbItem(doc) {
-  const item = doc && typeof doc.toObject === "function" ? doc.toObject({ depopulate: true }) : doc;
+function normalizeDbItem(item) {
   if (!item) return null;
-
   return {
-    id: String(item._id),
+    id: String(item.id),
     category: item.category || "",
     title: item.title || "",
     date: item.date || "",
     link: item.link || "",
-    coverImageLink: item.coverImageLink || "",
-    fileName: item.fileName || "",
-    fileUrl: item.fileUrl || "",
-    galleryLinks: Array.isArray(item.galleryLinks) ? item.galleryLinks : [],
-    galleryFileUrls: Array.isArray(item.galleryFileUrls) ? item.galleryFileUrls : [],
+    coverImageLink: item.cover_image_link || "",
+    fileName: item.file_name || "",
+    fileUrl: item.file_url || "",
+    galleryLinks: Array.isArray(item.gallery_links) ? item.gallery_links : [],
+    galleryFileUrls: Array.isArray(item.gallery_file_urls) ? item.gallery_file_urls : [],
     speaker: item.speaker || "",
-    eventTime: item.eventTime || "",
+    eventTime: item.event_time || "",
     summary: item.summary || "",
-    eventPlacement: item.eventPlacement || "",
-    entityId: item.entityId || "",
-    order: typeof item.order === "number" ? item.order : 0,
-    isDefault: Boolean(item.entityId),
-    cover: item.coverImageLink || item.fileUrl || "",
-    createdAt: item.createdAt || null,
-    updatedAt: item.updatedAt || null,
+    eventPlacement: item.event_placement || "",
+    entityId: item.entity_id || "",
+    order: typeof item.order_num === "number" ? item.order_num : 0,
+    isDefault: Boolean(item.entity_id),
+    cover: item.cover_image_link || item.file_url || "",
+    createdAt: item.created_at || null,
+    updatedAt: item.updated_at || null,
   };
 }
 
@@ -59,8 +57,23 @@ function isTruthyString(value) {
 
 async function getFeaturedSermonMerged() {
   const defaults = getDefaultData();
-  const doc = await FeaturedSermon.findOne({}).lean();
-  if (doc && (isTruthyString(doc.title) || isTruthyString(doc.embed))) return doc;
+  if (!supabase) {
+    return defaults.featuredSermon || null;
+  }
+  try {
+    const { data: rows, error } = await supabase
+      .from("featured_sermons")
+      .select("*")
+      .order("updated_at", { ascending: false })
+      .limit(1);
+
+    if (!error && rows && rows.length > 0) {
+      const doc = rows[0];
+      if (isTruthyString(doc.title) || isTruthyString(doc.embed)) return doc;
+    }
+  } catch (err) {
+    console.error("Supabase query error (featuredSermon):", err.message);
+  }
   return defaults.featuredSermon || null;
 }
 
@@ -71,22 +84,32 @@ async function getMergedItemsByCategory(category) {
     (item) => item && item.category === category,
   );
 
-  const [hidden, overrides, custom] = await Promise.all([
-    HiddenEntity.find({ category }).lean(),
-    AdminItem.find({ category, entityId: { $ne: "" } }).lean(),
-    AdminItem.find({
-      category,
-      $or: [{ entityId: "" }, { entityId: { $exists: false } }],
-      isDeleted: { $ne: true },
-    }).lean(),
-  ]);
+  let hidden = [];
+  let overrides = [];
+  let custom = [];
 
-  const hiddenSet = new Set((hidden || []).map((h) => `${h.category}:${h.entityId}`));
+  if (supabase) {
+    try {
+      const [hiddenRes, overridesRes, customRes] = await Promise.all([
+        supabase.from("hidden_entities").select("*").eq("category", category),
+        supabase.from("admin_items").select("*").eq("category", category).neq("entity_id", ""),
+        supabase.from("admin_items").select("*").eq("category", category).or("entity_id.eq.,entity_id.is.null").eq("is_deleted", false),
+      ]);
+
+      if (!hiddenRes.error && hiddenRes.data) hidden = hiddenRes.data;
+      if (!overridesRes.error && overridesRes.data) overrides = overridesRes.data;
+      if (!customRes.error && customRes.data) custom = customRes.data;
+    } catch (err) {
+      console.error("Supabase query error (getMergedItemsByCategory):", err.message);
+    }
+  }
+
+  const hiddenSet = new Set((hidden || []).map((h) => `${h.category}:${h.entity_id}`));
   const defaultEntityIds = new Set();
 
   const overrideByEntityId = new Map();
   for (const ov of overrides || []) {
-    if (ov && ov.entityId) overrideByEntityId.set(String(ov.entityId), ov);
+    if (ov && ov.entity_id) overrideByEntityId.set(String(ov.entity_id), ov);
   }
 
   const merged = [];
@@ -109,8 +132,8 @@ async function getMergedItemsByCategory(category) {
 
   // Orphan overrides (entityId not present in default file)
   for (const ov of overrides || []) {
-    if (!ov || !ov.entityId) continue;
-    const entityId = String(ov.entityId);
+    if (!ov || !ov.entity_id) continue;
+    const entityId = String(ov.entity_id);
     if (defaultEntityIds.has(entityId)) continue;
     if (hiddenSet.has(`${category}:${entityId}`)) continue;
     merged.push(normalizeDbItem(ov));
@@ -125,12 +148,17 @@ async function getMergedItemsByCategory(category) {
 }
 
 async function getAdminView() {
-  const [sermons, events, resources, featuredSermon, hiddenEntities] = await Promise.all([
+  let hiddenEntities = [];
+  if (supabase) {
+    const { data } = await supabase.from("hidden_entities").select("*");
+    if (data) hiddenEntities = data.map((h) => ({ category: h.category, entityId: h.entity_id }));
+  }
+
+  const [sermons, events, resources, featuredSermon] = await Promise.all([
     getMergedItemsByCategory("sermon"),
     getMergedItemsByCategory("event"),
     getMergedItemsByCategory("resource"),
     getFeaturedSermonMerged(),
-    HiddenEntity.find({}).lean(),
   ]);
 
   return {

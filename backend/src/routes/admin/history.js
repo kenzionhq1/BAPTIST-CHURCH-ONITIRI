@@ -1,6 +1,6 @@
 const express = require("express");
 
-const { AdminHistorySnapshot } = require("../../models");
+const { supabase } = require("../../config/supabase");
 const { restoreSnapshotById } = require("../../services/historyService");
 const { ok, badRequest } = require("../../utils/http");
 
@@ -9,15 +9,24 @@ const router = express.Router();
 router.get("/history", async (req, res, next) => {
   try {
     const limit = Math.min(Number.parseInt(String(req.query.limit || "50"), 10) || 50, 200);
-    const snapshots = await AdminHistorySnapshot.find({})
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .select("label createdAt")
-      .lean();
+
+    if (!supabase) return ok(res, []);
+
+    const { data: snapshots, error } = await supabase
+      .from("admin_history_snapshots")
+      .select("id, snapshot_data, created_at")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error || !snapshots) return ok(res, []);
 
     return ok(
       res,
-      snapshots.map((s) => ({ id: String(s._id), label: s.label || "", createdAt: s.createdAt })),
+      snapshots.map((s) => ({
+        id: String(s.id),
+        label: (s.snapshot_data && s.snapshot_data.label) || "",
+        createdAt: s.created_at,
+      })),
     );
   } catch (err) {
     return next(err);
@@ -26,19 +35,27 @@ router.get("/history", async (req, res, next) => {
 
 router.post("/history/undo", async (req, res, next) => {
   try {
-    const snapshots = await AdminHistorySnapshot.find({})
-      .sort({ createdAt: -1 })
-      .limit(2)
-      .select("_id label createdAt")
-      .lean();
+    if (!supabase) return badRequest(res, "Supabase not configured");
 
-    if (snapshots.length < 2) {
+    const { data: snapshots, error } = await supabase
+      .from("admin_history_snapshots")
+      .select("id, snapshot_data, created_at")
+      .order("created_at", { ascending: false })
+      .limit(2);
+
+    if (error || !snapshots || snapshots.length < 2) {
       return badRequest(res, "Nothing to undo (need at least 2 snapshots)");
     }
 
     const target = snapshots[1];
-    await restoreSnapshotById(target._id);
-    return ok(res, { restoredTo: { id: String(target._id), label: target.label || "", createdAt: target.createdAt } });
+    await restoreSnapshotById(target.id);
+    return ok(res, {
+      restoredTo: {
+        id: String(target.id),
+        label: (target.snapshot_data && target.snapshot_data.label) || "",
+        createdAt: target.created_at,
+      },
+    });
   } catch (err) {
     return next(err);
   }
@@ -50,7 +67,11 @@ router.post("/history/restore/:id", async (req, res, next) => {
     const snapshot = await restoreSnapshotById(snapshotId);
 
     return ok(res, {
-      restoredTo: { id: String(snapshot._id), label: snapshot.label || "", createdAt: snapshot.createdAt },
+      restoredTo: {
+        id: String(snapshot.id),
+        label: (snapshot.snapshot_data && snapshot.snapshot_data.label) || "",
+        createdAt: snapshot.created_at,
+      },
     });
   } catch (err) {
     return next(err);

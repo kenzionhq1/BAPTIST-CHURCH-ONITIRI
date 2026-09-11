@@ -253,7 +253,7 @@ const AdminPage = () => {
   const adminItems = useMemo(() => flatItems.filter((item) => isAdminObjectId(item.id)), [flatItems]);
   const authStorageKey = "bco_admin_auth_v1";
   const adminPasscode =
-    import.meta.env.VITE_ADMIN_PASSCODE || (import.meta.env.DEV ? "admin" : "");
+    import.meta.env.VITE_ADMIN_PASSCODE || import.meta.env.VITE_ADMIN_TOKEN || (import.meta.env.DEV ? "admin" : "");
   const sessionDurationMs = 12 * 60 * 60 * 1000;
 
   const refreshItems = async () => {
@@ -307,29 +307,46 @@ const AdminPage = () => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleAuthSubmit = (event: React.FormEvent) => {
+  const handleAuthSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setAuthError("");
 
-    if (!adminPasscode) {
-      setAuthError("Missing VITE_ADMIN_PASSCODE. Set it in your .env file.");
+    const entered = passcode.trim();
+    if (!entered) {
+      setAuthError("Please enter your passcode.");
       return;
     }
 
-    if (passcode.trim() !== adminPasscode) {
+    // Direct match check if VITE_ADMIN_PASSCODE / VITE_ADMIN_TOKEN is defined
+    if (adminPasscode && entered === adminPasscode) {
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          authStorageKey,
+          JSON.stringify({ token: entered, expiresAt: Date.now() + sessionDurationMs })
+        );
+      }
+      setIsAuthorized(true);
+      setPasscode("");
+      return;
+    }
+
+    // Otherwise test the token directly with backend API
+    try {
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          authStorageKey,
+          JSON.stringify({ token: entered, expiresAt: Date.now() + sessionDurationMs })
+        );
+      }
+      await fetchAdminView();
+      setIsAuthorized(true);
+      setPasscode("");
+    } catch {
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(authStorageKey);
+      }
       setAuthError("Incorrect passcode. Please try again.");
-      return;
     }
-
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(
-        authStorageKey,
-        JSON.stringify({ token: adminPasscode, expiresAt: Date.now() + sessionDurationMs })
-      );
-    }
-
-    setIsAuthorized(true);
-    setPasscode("");
   };
 
   const handleLogout = () => {
@@ -814,12 +831,6 @@ const AdminPage = () => {
           <p className="text-sm text-slate-600">
             This area is protected. Session lasts 12 hours after sign in.
           </p>
-          {!adminPasscode && (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              Missing <span className="font-semibold">VITE_ADMIN_PASSCODE</span>. Add it to your
-              frontend <span className="font-semibold">.env</span> file to unlock admin access.
-            </div>
-          )}
           <form onSubmit={handleAuthSubmit} className="space-y-3">
             <label className="text-sm font-semibold text-slate-700">
               Passcode
@@ -832,7 +843,7 @@ const AdminPage = () => {
               />
             </label>
             {authError && <p className="text-sm font-semibold text-red-600">{authError}</p>}
-            <button type="submit" className="btn-primary w-full" disabled={!adminPasscode}>
+            <button type="submit" className="btn-primary w-full">
               Unlock Admin
             </button>
           </form>

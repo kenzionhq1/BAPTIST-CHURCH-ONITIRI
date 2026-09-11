@@ -3,8 +3,11 @@
   "private": true,
   "scripts": {
     "dev": "npm run dev --prefix frontend",
+    "dev:backend": "npm start --prefix backend",
+    "dev:all": "npx concurrently \"npm start --prefix backend\" \"npm run dev --prefix frontend\"",
     "build": "npm run build --prefix frontend",
     "preview": "npm run preview --prefix frontend",
-    "install:frontend": "npm install --prefix frontend"
+    "install:frontend": "npm install --prefix frontend",
+    "install:backend": "npm install --prefix backend"
   }
 }

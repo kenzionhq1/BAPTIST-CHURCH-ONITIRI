@@ -1,7 +1,13 @@
+node_modules/
+dist/
 .vercel
-.env*.local
 .env
+.env*
+*.env
 backend/.env
+backend/*.env
+frontend/.env
+frontend/*.env
 .venv/
 venv/
 __pycache__/

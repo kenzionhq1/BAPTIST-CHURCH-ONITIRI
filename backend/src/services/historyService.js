@@ -1,53 +1,76 @@
-const { AdminItem, FeaturedSermon, HiddenEntity, AdminHistorySnapshot } = require("../models");
-
-function toPlain(doc) {
-  if (!doc) return null;
-  if (typeof doc.toObject === "function") return doc.toObject({ depopulate: true });
-  return doc;
-}
+const { supabase } = require("../config/supabase");
 
 async function cleanupOldSnapshots() {
-  const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-  await AdminHistorySnapshot.deleteMany({ createdAt: { $lt: cutoff } });
+  if (!supabase) return;
+  const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  await supabase.from("admin_history_snapshots").delete().lt("created_at", cutoff);
 }
 
 async function createSnapshot(label) {
-  const [items, featuredSermon, hiddenEntities] = await Promise.all([
-    AdminItem.find({}).lean(),
-    FeaturedSermon.findOne({}).lean(),
-    HiddenEntity.find({}).lean(),
-  ]);
+  if (!supabase) return { id: "offline" };
 
-  const snapshot = await AdminHistorySnapshot.create({
-    label: label || "",
-    items: (items || []).map(toPlain),
-    featuredSermon: toPlain(featuredSermon),
-    hiddenEntities: (hiddenEntities || []).map(toPlain),
-  });
+  try {
+    const [itemsRes, featuredRes, hiddenRes] = await Promise.all([
+      supabase.from("admin_items").select("*"),
+      supabase.from("featured_sermons").select("*"),
+      supabase.from("hidden_entities").select("*"),
+    ]);
 
-  await cleanupOldSnapshots();
-  return snapshot;
+    const snapshotData = {
+      label: label || "",
+      items: itemsRes.data || [],
+      featuredSermon: (featuredRes.data && featuredRes.data[0]) || null,
+      hiddenEntities: hiddenRes.data || [],
+    };
+
+    const { data, error } = await supabase
+      .from("admin_history_snapshots")
+      .insert([{ snapshot_data: snapshotData }])
+      .select("id")
+      .single();
+
+    if (error) {
+      console.error("Error creating snapshot in Supabase:", error.message);
+      return { id: "error" };
+    }
+
+    await cleanupOldSnapshots();
+    return data;
+  } catch (err) {
+    console.error("Error creating history snapshot:", err.message);
+    return { id: "error" };
+  }
 }
 
 async function restoreSnapshotById(snapshotId) {
-  const snapshot = await AdminHistorySnapshot.findById(snapshotId).lean();
-  if (!snapshot) {
+  if (!supabase) throw new Error("Supabase is not configured");
+
+  const { data: snapshot, error } = await supabase
+    .from("admin_history_snapshots")
+    .select("*")
+    .eq("id", snapshotId)
+    .single();
+
+  if (error || !snapshot) {
     const err = new Error("Snapshot not found");
     err.statusCode = 404;
     throw err;
   }
 
-  const items = Array.isArray(snapshot.items) ? snapshot.items : [];
-  const hiddenEntities = Array.isArray(snapshot.hiddenEntities) ? snapshot.hiddenEntities : [];
+  const snapshotData = snapshot.snapshot_data || {};
+  const items = Array.isArray(snapshotData.items) ? snapshotData.items : [];
+  const hiddenEntities = Array.isArray(snapshotData.hiddenEntities) ? snapshotData.hiddenEntities : [];
+  const featuredSermon = snapshotData.featuredSermon;
 
-  await AdminItem.deleteMany({});
-  if (items.length > 0) await AdminItem.insertMany(items, { ordered: false });
+  await Promise.all([
+    supabase.from("admin_items").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
+    supabase.from("hidden_entities").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
+    supabase.from("featured_sermons").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
+  ]);
 
-  await HiddenEntity.deleteMany({});
-  if (hiddenEntities.length > 0) await HiddenEntity.insertMany(hiddenEntities, { ordered: false });
-
-  await FeaturedSermon.deleteMany({});
-  if (snapshot.featuredSermon) await FeaturedSermon.create(snapshot.featuredSermon);
+  if (items.length > 0) await supabase.from("admin_items").insert(items);
+  if (hiddenEntities.length > 0) await supabase.from("hidden_entities").insert(hiddenEntities);
+  if (featuredSermon) await supabase.from("featured_sermons").insert([featuredSermon]);
 
   return snapshot;
 }
@@ -56,4 +79,3 @@ module.exports = {
   createSnapshot,
   restoreSnapshotById,
 };
-
